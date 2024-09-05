@@ -27,12 +27,9 @@ public class GameRoundRepository : IGameRoundRepository
 			parameters.Add("@game_id", gameId);
 			parameters.Add("@wallet_id", walletId);
 
-			string sqlQuery = @"
-								SELECT r.id
+			string sqlQuery = @"SELECT r.id
 								FROM bet.rounds r
-								WHERE r.created_on >= (NOW() AT TIME ZONE 'UTC') - INTERVAL '7 days'
-								  AND r.created_on <= NOW() AT TIME ZONE 'UTC'
-								  AND r.external_round_id = @external_round_id
+								WHERE r.external_round_id = @external_round_id
 								  AND r.game_provider_id = @game_provider_id
 								  AND r.game_id = @game_id
 								  AND r.wallet_id = @wallet_id;";
