@@ -1,4 +1,4 @@
-﻿using SabaRecord.Core;
+﻿using SabaRecord.Common;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

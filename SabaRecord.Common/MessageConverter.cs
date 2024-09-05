@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Options;
-using SabaRecord.Common;
+using SabaRecord.Core;
 using SabaRecord.Core.ApplicationServices;
 using Tgs.GameRecord.Handle.Common.Protos;
 
-namespace SabaRecord.Core;
+namespace SabaRecord.Common;
 
 public interface IMessageConverter
 {
