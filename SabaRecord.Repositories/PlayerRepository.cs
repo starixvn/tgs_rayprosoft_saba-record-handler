@@ -5,7 +5,6 @@ using Npgsql;
 using SabaRecord.Core;
 using SabaRecord.Core.Models;
 
-
 namespace SabaRecord.Repositories
 {
 	public class PlayerRepositoryImp : IPlayerRepository
@@ -47,7 +46,7 @@ namespace SabaRecord.Repositories
 			}
 		}
 
-		public async Task<PlayerInfo> GetPlayerInfobyPlayerCodeAsync (string code)
+		public async Task<PlayerInfo> GetPlayerInfobyPlayerCodeAsync(string code)
 		{
 			using (IDbConnection db = new NpgsqlConnection(_connectionString))
 			{
@@ -75,7 +74,7 @@ namespace SabaRecord.Repositories
 								p.player_code = @PlayerCode;";
 
 				var parameters = new { PlayerCode = code };
-				var playerInfo = await db.QueryFirstOrDefaultAsync<PlayerInfo>(sql, parameters); // check correct property later 
+				var playerInfo = await db.QueryFirstOrDefaultAsync<PlayerInfo>(sql, parameters); // check correct property later
 				return playerInfo;
 			}
 		}
@@ -86,26 +85,24 @@ namespace SabaRecord.Repositories
 			using (IDbConnection db = new NpgsqlConnection(_connectionString))
 			{
 				string sqlQuery = @"
-            SELECT 
-                id as GameId, 
-                status, 
-                external_id AS ExternalGameId, 
-                game_provider_id AS GameProviderId, 
-                sub_game AS SubGame, 
-                available_currencies AS AvailableCurrencies, 
-                code as GameCode, 
-                name, 
+            SELECT
+                id as GameId,
+                status,
+                external_id AS ExternalGameId,
+                game_provider_id AS GameProviderId,
+                sub_game AS SubGame,
+                available_currencies AS AvailableCurrencies,
+                code as GameCode,
+                name,
                 sub_game_provider_code AS SubGameProviderCode
-            FROM 
+            FROM
                 dbo.games
-            WHERE 
+            WHERE
                 game_provider_id = @GameProviderId";
 
 				var parameters = new { GameProviderId = gameProviderId };
-				var games = await db.QueryFirstOrDefaultAsync<GameInfo>(sqlQuery, parameters); // check correct property later 
+				var games = await db.QueryFirstOrDefaultAsync<GameInfo>(sqlQuery, parameters); // check correct property later
 				return games;
-
-				
 			}
 		}
 
@@ -114,12 +111,12 @@ namespace SabaRecord.Repositories
 			using (IDbConnection db = new NpgsqlConnection(_connectionString))
 			{
 				string sqlQuery = @"
-									SELECT 
-										bgp.game_provider_configuration_id 
-									FROM 
+									SELECT
+										bgp.game_provider_configuration_id
+									FROM
 										dbo.brand_game_providers AS bgp
-									WHERE 
-										bgp.game_provider_id = @GameProviderId 
+									WHERE
+										bgp.game_provider_id = @GameProviderId
 										AND bgp.brand_id = @BrandId";
 
 				var parameters = new { GameProviderId = gameProviderId, BrandId = brandId };

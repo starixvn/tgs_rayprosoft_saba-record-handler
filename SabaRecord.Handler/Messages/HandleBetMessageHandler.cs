@@ -32,7 +32,7 @@ public class HandleBetMessageHandler(
 					message.TransactionTime,
 					message.Settle,
 					message.BetAmount,
-					message.WinLoss,
+					message.Payout,
 					message.TxId
 				},
 				Message = "This message receiving handler."

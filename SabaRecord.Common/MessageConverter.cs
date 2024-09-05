@@ -19,25 +19,27 @@ public class MessageConverter(IOptions<GameProviderInfo> gameRecordInfoOptions) 
 	{
 		var betState = (BetState)message.BetState;
 		var isClosed = betState is not BetState.Running;
-		var idVoid = betState is BetState.Void or BetState.Running or BetState.Refund or BetState.Refund;
-		var isCashOut = message.ExtraStatus.Equals("cashout", StringComparison.OrdinalIgnoreCase);
+		var isVoid = betState is BetState.Void or BetState.Running or BetState.Refund or BetState.Refund;
+		var isCashout = !string.IsNullOrEmpty(message.ExtraStatus) || message.ExtraStatus.Equals("void cashout", StringComparison.OrdinalIgnoreCase);
 
 		var bet = message.BetAmount;
-		var validBet = isCashOut ? 0 : !idVoid ? message.BetAmount : 0;
+		var validBet = message.BetAmount;
 
 		var settle = 0.0m;
 		var turnover = 0.0m;
-		var winLoss = 0.0m;
+		var payout = 0.0m;
 		var cashoutState = CashoutState.None;
-		var externalClosedOn = DateTimeOffset.UnixEpoch.DateTime;
+		var externalClosedOn = (DateTimeOffset?)null;
 
 		if (isClosed)
 		{
-			turnover = message.BetAmount;
 			settle = message.Settle;
+			payout = message.Payout;
 			externalClosedOn = message.WinlostDate;
-			winLoss = message.WinLoss;
-			cashoutState = isCashOut ? CashoutState.Cashout : CashoutState.None;
+
+			validBet = isCashout ? 0 : !isVoid ? message.BetAmount : 0;
+			turnover = isCashout ? 0 : !isVoid ? message.BetAmount : 0;
+			cashoutState = isCashout ? CashoutState.Cashout : CashoutState.None;
 		}
 
 		return new HandleBetCommand
@@ -49,22 +51,24 @@ public class MessageConverter(IOptions<GameProviderInfo> gameRecordInfoOptions) 
 			ExternalBetId = message.TxId,
 			ExternalRoundId = message.TxId,
 			ExternalCreatedOn = message.TransactionTime,
-			ExternalClosedOn = externalClosedOn,
-			ExternalPayoffOn = externalClosedOn,
+			ExternalClosedOn = externalClosedOn?.DateTime,
+			ExternalPayoffOn = externalClosedOn?.DateTime,
+			// TO DO: ExternalResettleOn is hard code
 			ExternalResettleOn = DateTimeOffset.UnixEpoch.DateTime,
 			BetState = betState,
-			BetType = BetType.Normal,
+			BetType = (BetType)message.BetType,
 			FreeGameState = FreeGameState.None,
 			GambleState = GambleState.None,
 			CashoutState = cashoutState,
 			ResettleState = ResettleState.None,
 			JackpotState = JackpotState.None,
 			Bet = bet,
+			ActualAmount = message.ActualAmount,
 			ValidBet = validBet,
 			Settle = settle,
 			Commission = 0.0m,
 			Turnover = turnover,
-			WinLoss = winLoss,
+			Payout = payout,
 			Jackpot = 0.0M,
 			AdditionalData = JsonSerializer.Serialize(message)
 		};

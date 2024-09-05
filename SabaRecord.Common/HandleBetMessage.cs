@@ -18,7 +18,11 @@ public class HandleBetMessage
 
 	public decimal BetAmount { get; set; } = 0;
 
-	public decimal WinLoss { get; set; } = 0;
+	public decimal ActualAmount { get; set; } = 0;
+
+	public decimal Payout { get; set; } = 0;
 
 	public string TxId { get; set; } = "";
+
+	public int BetType { get; set; } = 0;
 }

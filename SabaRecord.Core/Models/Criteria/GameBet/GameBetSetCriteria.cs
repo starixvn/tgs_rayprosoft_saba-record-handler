@@ -29,11 +29,12 @@ public class GameBetSetCriteria
 	public int JackpotState { get; set; } // integer
 	public decimal CurrencyRatio { get; set; } // numeric
 	public decimal Bet { get; set; } // numeric
+	public decimal ActualAmount { get; set; } // numeric
 	public decimal ValidBet { get; set; } // numeric
 	public decimal Settle { get; set; } // numeric
 	public decimal Commission { get; set; } // numeric
 	public decimal Turnover { get; set; } // numeric
-	public decimal WinLoss { get; set; } // numeric
+	public decimal Payout { get; set; } // numeric
 	public decimal Jackpot { get; set; } // numeric
 	public DateTimeOffset? CreatedOn { get; set; } // timestamp with time zone
 	public DateTimeOffset? ClosedOn { get; set; } // timestamp with time zone (nullable)
