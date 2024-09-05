@@ -1,6 +1,6 @@
 ﻿using SabaRecord.Core.Models.Criteria.GameBet;
 
-namespace SabaRecord.Core;
+namespace SabaRecord.Core.Repositories;
 
 public interface IGameBetRepository
 {

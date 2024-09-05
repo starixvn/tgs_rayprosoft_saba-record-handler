@@ -4,13 +4,12 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SabaRecord.Handler;
-using SabaRecord.Core;
 using SabaRecord.Core.DependencyInjection;
 using SabaRecord.Repositories.DependencyInjection;
 using Tgs.GameRecord.Saba.Common;
-using Tgs.GameRecord.Saba.Core;
 using Tgs.MessageQueue.Nats.Serializers;
 using SabaRecord.Handler.Messages;
+using SabaRecord.Core.Configuarations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,8 +37,16 @@ builder.Services
 		configuration.GetSection("PolicySettings").Bind(options);
 	})
 	.Services
+	.AddOptions<CacheSettingsOptions>()
+	.Configure((CacheSettingsOptions options, IServiceProvider sp) =>
+	{
+		var configuration = sp.GetRequiredService<IConfiguration>();
+		configuration.GetSection("CacheSettings").Bind(options);
+	})
+	.Services
 	.AddSabaRecordHandlerApiCore()
 	.AddRepositories()
+	.AddMemoryCache()
 	.AddApiLogsRepositories(mongoClientResolver: (sp) => sp.GetRequiredService<MongoDBConnectionManager>().MongoClient);
 
 builder.Services

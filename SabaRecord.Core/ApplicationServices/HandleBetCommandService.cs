@@ -2,7 +2,7 @@
 using SabaRecord.Core.Constant;
 using SabaRecord.Core.Models.Criteria.GameBet;
 using SabaRecord.Core.Models.Enum;
-using SabaRecord.Repositories;
+using SabaRecord.Core.Repositories;
 using Tgs.GameRecord.Handle.Common.Protos;
 using Tgs.SerialNumberGenerator;
 using Tgs.ServiceUtility;
@@ -14,16 +14,18 @@ public class HandleBetCommandService(
 	ISerialNumberGenerator serialNumberGenerator,
 	IPlayerRepository playerRepository,
 	IGameBetRepository gameBetRepository,
-	IGameRoundRepository roundRepository) : ICommandService<HandleBetCommand>
+	IGameRoundRepository roundRepository,
+	IProviderRepository providerRepository
+	) : ICommandService<HandleBetCommand>
 {
 	public async ValueTask ExecuteAsync(HandleBetCommand command, CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			var gameProviderId = await playerRepository.GetProviderIdByCodeAsync(command.GameProviderCode);
+			var gameProviderId = (Guid)await providerRepository.GetProviderIdByCodeAsync(command.GameProviderCode);
 			var playerInfo = await playerRepository.GetPlayerInfobyPlayerCodeAsync(command.PlayerCode);
-			var gameProviderConfigurationId = await playerRepository.GetGameProviderConfigurationIdAsync(gameProviderId, playerInfo.BrandId);
-			var gameInfo = await playerRepository.GetGamesByProviderIdAsync(gameProviderId);
+			var gameProviderConfigurationId = (Guid)await providerRepository.GetGameProviderConfigurationIdAsync(gameProviderId, playerInfo.BrandId);
+			var gameInfo = await providerRepository.GetGamesByProviderIdAsync(gameProviderId);
 
 			var exchangeRates = GetExchangeRates(playerInfo.PlayerCode, gameInfo.GameProviderCode);
 

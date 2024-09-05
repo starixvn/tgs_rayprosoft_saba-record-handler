@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using SabaRecord.Core;
 using SabaRecord.Core.ApplicationServices;
+using SabaRecord.Core.Configuarations;
 using Tgs.GameRecord.Handle.Common.Protos;
 
 namespace SabaRecord.Common;

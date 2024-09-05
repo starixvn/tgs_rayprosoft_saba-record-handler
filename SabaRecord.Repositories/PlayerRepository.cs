@@ -1,56 +1,36 @@
 ﻿using System.Data;
 using Dapper;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Npgsql;
-using SabaRecord.Core;
+using SabaRecord.Core.Configuarations;
 using SabaRecord.Core.Models;
+using SabaRecord.Core.Repositories;
 
 namespace SabaRecord.Repositories
 {
 	public class PlayerRepositoryImp : IPlayerRepository
 	{
-		private readonly string _connectionString;
+		private readonly string connectionString;
+		private readonly IMemoryCache memoryCache;
+		private readonly CacheSettingsOptions cacheSettings;
 
-		public PlayerRepositoryImp(IConfiguration configuration)
+		public PlayerRepositoryImp(IConfiguration configuration, IMemoryCache memoryCache, IOptions<CacheSettingsOptions> cacheSettings)
 		{
-			_connectionString = configuration.GetConnectionString("Tgs")!;
+			connectionString = configuration.GetConnectionString("Tgs")!;
+			this.memoryCache = memoryCache;
+			this.cacheSettings = cacheSettings.Value;
 		}
 
-		public async Task<TResult> CallStoredProcedureAsync<TCriteria, TResult>(TCriteria criteria, string spName)
+		public async Task<PlayerInfo?> GetPlayerInfobyPlayerCodeAsync(string code)
 		{
-			using (IDbConnection db = new NpgsqlConnection(_connectionString))
+			string key = $"{typeof(PlayerRepositoryImp).Namespace!.Replace(".", "-").ToLower()}:PlayerInfo:{code}";
+			if (!memoryCache.TryGetValue(key, out PlayerInfo? playerInfo))
 			{
-				var parameters = new DynamicParameters();
-
-				foreach (var property in typeof(TCriteria).GetProperties())
+				using (IDbConnection db = new NpgsqlConnection(connectionString))
 				{
-					var value = property.GetValue(criteria);
-					parameters.Add(property.Name.ToLower(), value);
-				}
-
-				string sqlQuery = $"CALL {spName}({string.Join(", ", typeof(TCriteria).GetProperties().Select(p => $"@{p.Name.ToLower()}"))})";
-
-				var result = await db.QueryFirstAsync<TResult>(sqlQuery, parameters);
-
-				return result;
-			}
-		}
-
-		public async Task<Guid> GetProviderIdByCodeAsync(string code)
-		{
-			using (IDbConnection db = new NpgsqlConnection(_connectionString))
-			{
-				string sqlQuery = "SELECT ga.Id FROM dbo.game_providers ga WHERE ga.code = @Code";
-				var result = await db.QueryFirstOrDefaultAsync<Guid>(sqlQuery, new { Code = code });
-				return result;
-			}
-		}
-
-		public async Task<PlayerInfo> GetPlayerInfobyPlayerCodeAsync(string code)
-		{
-			using (IDbConnection db = new NpgsqlConnection(_connectionString))
-			{
-				string sql = @"
+					string sql = @"
 							SELECT
 								r.Id AS ResellerId,
 								r.Code AS ResellerCode,
@@ -73,56 +53,17 @@ namespace SabaRecord.Repositories
 							WHERE
 								p.player_code = @PlayerCode;";
 
-				var parameters = new { PlayerCode = code };
-				var playerInfo = await db.QueryFirstOrDefaultAsync<PlayerInfo>(sql, parameters); // check correct property later
-				return playerInfo;
+					var parameters = new { PlayerCode = code };
+					playerInfo = await db.QueryFirstOrDefaultAsync<PlayerInfo>(sql, parameters); // check correct property later
+				}
+
+				if (playerInfo is not null)
+				{
+					return memoryCache.Set(key, playerInfo, TimeSpan.FromMinutes(cacheSettings.ExpiredTimeInMinute));
+				}
 			}
-		}
 
-		public async Task<GameInfo> GetGamesByProviderIdAsync(Guid gameProviderId)
-		{
-			gameProviderId = gameProviderId == default ? Guid.Parse("9d57276a-15ee-4e3f-a1cb-6cb7dd7bb641") : gameProviderId;
-			using (IDbConnection db = new NpgsqlConnection(_connectionString))
-			{
-				string sqlQuery = @"
-            SELECT
-                id as GameId,
-                status,
-                external_id AS ExternalGameId,
-                game_provider_id AS GameProviderId,
-                sub_game AS SubGame,
-                available_currencies AS AvailableCurrencies,
-                code as GameCode,
-                name,
-                sub_game_provider_code AS SubGameProviderCode
-            FROM
-                dbo.games
-            WHERE
-                game_provider_id = @GameProviderId";
-
-				var parameters = new { GameProviderId = gameProviderId };
-				var games = await db.QueryFirstOrDefaultAsync<GameInfo>(sqlQuery, parameters); // check correct property later
-				return games;
-			}
-		}
-
-		public async Task<Guid> GetGameProviderConfigurationIdAsync(Guid gameProviderId, Guid brandId)
-		{
-			using (IDbConnection db = new NpgsqlConnection(_connectionString))
-			{
-				string sqlQuery = @"
-									SELECT
-										bgp.game_provider_configuration_id
-									FROM
-										dbo.brand_game_providers AS bgp
-									WHERE
-										bgp.game_provider_id = @GameProviderId
-										AND bgp.brand_id = @BrandId";
-
-				var parameters = new { GameProviderId = gameProviderId, BrandId = brandId };
-				var result = await db.QueryFirstOrDefaultAsync<Guid>(sqlQuery, parameters);
-				return result;
-			}
+			return playerInfo;
 		}
 	}
 }

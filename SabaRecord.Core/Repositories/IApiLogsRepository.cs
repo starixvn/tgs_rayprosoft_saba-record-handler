@@ -1,4 +1,4 @@
-﻿namespace SabaRecord.Core;
+﻿namespace SabaRecord.Core.Repositories;
 
 public interface IApiLogsRepository
 {

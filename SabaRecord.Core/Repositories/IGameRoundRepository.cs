@@ -1,6 +1,6 @@
 ﻿using SabaRecord.Core.Models.Criteria.GameRound;
 
-namespace SabaRecord.Repositories;
+namespace SabaRecord.Core.Repositories;
 
 public interface IGameRoundRepository
 {

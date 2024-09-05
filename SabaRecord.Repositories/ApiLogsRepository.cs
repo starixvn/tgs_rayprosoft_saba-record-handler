@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using SabaRecord.Core;
+using SabaRecord.Core.Repositories;
 using SabaRecord.Repositories.Models;
 
 namespace SabaRecord.Repositories;

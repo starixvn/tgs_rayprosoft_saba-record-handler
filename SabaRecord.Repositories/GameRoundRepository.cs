@@ -3,6 +3,7 @@ using Dapper;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using SabaRecord.Core.Models.Criteria.GameRound;
+using SabaRecord.Core.Repositories;
 
 namespace SabaRecord.Repositories;
 

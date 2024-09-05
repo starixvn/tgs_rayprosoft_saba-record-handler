@@ -2,8 +2,8 @@
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using SabaRecord.Core;
 using SabaRecord.Core.Models.Criteria.GameBet;
+using SabaRecord.Core.Repositories;
 
 namespace SabaRecord.Repositories;
 

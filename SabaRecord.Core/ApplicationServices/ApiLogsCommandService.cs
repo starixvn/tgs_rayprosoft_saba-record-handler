@@ -1,4 +1,5 @@
-﻿using Tgs.ServiceUtility;
+﻿using SabaRecord.Core.Repositories;
+using Tgs.ServiceUtility;
 
 namespace SabaRecord.Core.ApplicationServices;
 

@@ -1,4 +1,4 @@
-﻿namespace Tgs.GameRecord.Saba.Core;
+﻿namespace SabaRecord.Core.Configuarations;
 public record PolicySettingsOptions
 {
 	public int RetryCount { get; init; } = 3;
