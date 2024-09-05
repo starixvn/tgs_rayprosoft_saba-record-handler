@@ -26,12 +26,11 @@ public class HandleBetCommandService(
 			var gameInfo = await playerRepository.GetGamesByProviderIdAsync(gameProviderId);
 
 			var exchangeRates = GetExchangeRates(playerInfo.PlayerCode, gameInfo.GameProviderCode);
-			var gameCurrencyInfo = GetExchangeRates(playerInfo.PlayerCode, gameInfo.GameProviderCode);
 
 			var existedRoundId = await roundRepository.GetIdAsync(gameProviderId, gameInfo.GameId, playerInfo.WalletId, command.ExternalRoundId);
 			var id = existedRoundId.HasValue ? existedRoundId : await serialNumberGenerator.GenerateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 			var roundStatus = command.BetState is BetState.Waiting or BetState.Running ? RoundStatus.Open : RoundStatus.Closed;
-
+			// TO DO: Lack of Rounds Detail
 			var roundCriteria = new Models.Criteria.GameRound.GameRoundSetCriteria()
 			{
 				Id = (Guid)id,
@@ -61,6 +60,7 @@ public class HandleBetCommandService(
 			};
 			await roundRepository.GameRoundSetAsync(roundCriteria);
 
+			// TO DO: Lack of Additional Data
 			var gameBetCriteria = new GameBetSetCriteria()
 			{
 				GameProviderId = gameProviderId,
