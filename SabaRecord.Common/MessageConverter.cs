@@ -35,7 +35,7 @@ public class MessageConverter(IOptions<GameProviderInfo> gameRecordInfoOptions) 
 		{
 			settle = message.Settle;
 			payout = message.Payout;
-			externalClosedOn = message.WinlostDate;
+			externalClosedOn = message.WinlostDate.ToUniversalTime();
 
 			validBet = isCashout ? 0 : !isVoid ? message.BetAmount : 0;
 			turnover = isCashout ? 0 : !isVoid ? message.BetAmount : 0;
