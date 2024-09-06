@@ -107,7 +107,9 @@ public class GameRoundRepository : IGameRoundRepository
 						"effective_betting_percentage => @effective_betting_percentage, " +
 						"actiontype => @actiontype);";
 
-			_ = await db.ExecuteAsync(sqlQuery, parameters);
+			var result = await db.QueryAsync<object>(sqlQuery, parameters);
+
+			Console.WriteLine(result.ToString());
 		}
 	}
 

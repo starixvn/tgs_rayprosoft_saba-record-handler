@@ -29,13 +29,13 @@ public class MessageConverter(IOptions<GameProviderInfo> gameRecordInfoOptions) 
 		var turnover = 0.0m;
 		var payout = 0.0m;
 		var cashoutState = CashoutState.None;
-		var externalClosedOn = (DateTimeOffset?)null;
+		var externalClosedOn = (DateTime?)null;
 
 		if (isClosed)
 		{
 			settle = message.Settle;
 			payout = message.Payout;
-			externalClosedOn = message.WinlostDate?.ToUniversalTime() ?? DateTimeOffset.UtcNow;
+			externalClosedOn = message.WinlostDate?.ToUniversalTime();
 
 			validBet = isCashout ? 0 : !isVoid ? message.BetAmount : 0;
 			turnover = isCashout ? 0 : !isVoid ? message.BetAmount : 0;
@@ -50,9 +50,9 @@ public class MessageConverter(IOptions<GameProviderInfo> gameRecordInfoOptions) 
 			PlayerCode = message.PlayerCode,
 			ExternalBetId = message.TxId,
 			ExternalRoundId = message.TxId,
-			ExternalCreatedOn = message.TransactionTime ?? DateTime.UtcNow,
-			ExternalClosedOn = externalClosedOn?.DateTime,
-			ExternalPayoffOn = externalClosedOn?.DateTime,
+			ExternalCreatedOn = message.TransactionTime?.ToUniversalTime(),
+			ExternalClosedOn = externalClosedOn,
+			ExternalPayoffOn = externalClosedOn,
 			// TO DO: ExternalResettleOn is hard code
 			ExternalResettleOn = DateTimeOffset.UnixEpoch.DateTime,
 			BetState = betState,

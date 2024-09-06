@@ -10,7 +10,7 @@ public class HandleBetCommand
 	public string ExternalRoundId { get; set; }
 	public string ExternalBetId { get; set; }
 	public string ExternalGameId { get; set; }
-	public DateTime ExternalCreatedOn { get; set; }
+	public DateTime? ExternalCreatedOn { get; set; }
 	public DateTime? ExternalClosedOn { get; set; }
 	public DateTime? ExternalPayoffOn { get; set; }
 	public DateTime ExternalResettleOn { get; set; }

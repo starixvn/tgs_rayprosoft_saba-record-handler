@@ -15,7 +15,7 @@ public class GameRoundSetCriteria
 	public DateTime? ClosedOn { get; set; } // timestamp with time zone (nullable)
 	public DateTime? UpdatedOn { get; set; } // timestamp with time zone (nullable)
 	public Guid BrandId { get; set; } // uuid
-	public DateTime ExternalCreatedOn { get; set; } // timestamp with time zone
+	public DateTime? ExternalCreatedOn { get; set; } // timestamp with time zone
 	public DateTime? ExternalClosedOn { get; set; } // timestamp with time zone (nullable)
 	public decimal BetAmount { get; set; } // numeric
 	public decimal ActualAmount { get; internal set; } // numeric
