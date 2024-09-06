@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using SabaRecord.Core.Constant;
-using SabaRecord.Core.Models.Criteria.GameBet;
 using SabaRecord.Core.Models.Enum;
 using SabaRecord.Core.Repositories;
 using Tgs.GameRecord.Handle.Common.Protos;
@@ -13,7 +12,6 @@ public class HandleBetCommandService(
 	ILogger<HandleBetCommandService> logger,
 	ISerialNumberGenerator serialNumberGenerator,
 	IPlayerRepository playerRepository,
-	IGameBetRepository gameBetRepository,
 	IGameRoundRepository roundRepository,
 	IProviderRepository providerRepository
 	) : ICommandService<HandleBetCommand>
@@ -32,7 +30,6 @@ public class HandleBetCommandService(
 			var id = existedRoundId.HasValue ? existedRoundId : await serialNumberGenerator.GenerateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 			var roundStatus = command.BetState is BetState.Waiting or BetState.Running ? RoundStatus.Open : RoundStatus.Closed;
 
-			// TO DO: Lack of Rounds Detail
 			var roundCriteria = new Models.Criteria.GameRound.GameRoundSetCriteria()
 			{
 				Id = (Guid)id,
@@ -60,53 +57,8 @@ public class HandleBetCommandService(
 				CreatedOn = DateTimeOffset.UtcNow.DateTime,
 				UpdatedOn = DateTimeOffset.UtcNow.DateTime,
 			};
+			// TO DO: Insert Rounds Detail
 			await roundRepository.GameRoundSetAsync(roundCriteria);
-
-			// TO DO: Lack of Additional Data
-			var gameBetCriteria = new GameBetSetCriteria()
-			{
-				GameProviderId = gameProviderId,
-				GameId = gameInfo.GameId,
-				WalletId = playerInfo.WalletId,
-				ExternalBetId = command.ExternalBetId,
-				ExternalCreatedOn = command.ExternalCreatedOn,
-				Id = (Guid)id,
-				GameProviderConfigurationId = gameProviderConfigurationId,
-				ResellerId = playerInfo.ResellerId,
-				LicenseeId = playerInfo.LicenseeId,
-				BrandId = playerInfo.BrandId,
-				PlayerCode = playerInfo.PlayerCode,
-				CurrencyCode = playerInfo.CurrencyCode,
-				ExternalRoundId = command.ExternalRoundId,
-				ExternalClosedOn = command.ExternalClosedOn ?? DateTimeOffset.UnixEpoch.DateTime,
-				ExternalPayoffOn = command.ExternalPayoffOn ?? DateTimeOffset.UnixEpoch.DateTime,
-				ExternalResettleOn = command.ExternalResettleOn,
-				BetState = (int)BetType.Normal,
-				// TO DO: BetType is hard code
-				BetType = (int)command.BetType,
-				FreeGameState = (int)command.FreeGameState,
-				GambleState = (int)command.GambleState,
-				CashoutState = (int)command.CashoutState,
-				ResettleState = (int)command.ResettleState,
-				JackpotState = (int)command.JackpotState,
-				CurrencyRatio = exchangeRates, // Double check
-				Bet = ConvertPlatformRounds(exchangeRates, command.Bet),
-				ActualAmount = ConvertPlatformRounds(exchangeRates, command.ActualAmount),
-				ValidBet = ConvertPlatformRounds(exchangeRates, command.ValidBet),
-				Settle = ConvertPlatformRounds(exchangeRates, command.Settle),
-				Commission = ConvertPlatformRounds(exchangeRates, command.Commission),
-				Turnover = ConvertPlatformRounds(exchangeRates, command.Turnover),
-				Payout = ConvertPlatformRounds(exchangeRates, command.Payout),
-				Jackpot = ConvertPlatformRounds(exchangeRates, command.Jackpot),
-				ResetState = 0,
-				CreatedOn = DateTimeOffset.UtcNow.DateTime,
-				UpdatedOn = DateTimeOffset.UtcNow.DateTime,
-				ClosedOn = DateTimeOffset.UnixEpoch.UtcDateTime,
-				ResetOn = DateTimeOffset.UnixEpoch.UtcDateTime,
-				ActionType = command.Action
-			};
-
-			await gameBetRepository.GameBetSetAsync(gameBetCriteria);
 		}
 		catch (Exception ex)
 		{
