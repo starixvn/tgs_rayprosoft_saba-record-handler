@@ -30,4 +30,5 @@ public class HandleBetCommand
 	public decimal ActualAmount { get; set; }
 	public string AdditionalData { get; set; }
 	public string ExtraStatus { get; set; }
+	public long LicenseeTxid { get; set; }
 }

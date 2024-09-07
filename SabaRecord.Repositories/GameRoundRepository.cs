@@ -57,10 +57,13 @@ public class GameRoundRepository : IGameRoundRepository
 			parameters.Add("@wallet_id", criteria.WalletId);
 			parameters.Add("@brand_id", criteria.BrandId);
 			parameters.Add("@licenseetxid", criteria.LicenseeTxId);
+			parameters.Add("@external_created_on", criteria.ExternalCreatedOn);
+
 			parameters.Add("@actiontype", criteria.ActionType);
 
 			string sqlQuery = "CALL bet.bet_rounds_set(" +
 					"id => @id, " +
+					"external_created_on => @external_created_on, " +
 					"external_round_id => @external_round_id, " +
 					"game_provider_id => @game_provider_id, " +
 					"player_code => @player_code, " +
@@ -72,9 +75,7 @@ public class GameRoundRepository : IGameRoundRepository
 					"licenseetxid => @licenseetxid, " +
 					"actiontype => @actiontype);";
 
-			var result = await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
-
-			Console.WriteLine(result.ToString());
+			await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
 		}
 	}
 
@@ -104,13 +105,12 @@ public class GameRoundRepository : IGameRoundRepository
 			parameters.Add("@settle_amount", criteria.SettleAmount);
 			parameters.Add("@commission", criteria.Commission);
 			parameters.Add("@turnover", criteria.Turnover);
-			parameters.Add("@pay_out", criteria.Payout);
+			parameters.Add("@payout", criteria.Payout);
 			parameters.Add("@tie_bet_adjustment", criteria.TieBetAdjustment);
 			parameters.Add("@client_status", criteria.ClientStatus);
 			parameters.Add("@reopen_turnover_adjustment", criteria.ReopenTurnoverAdjustment);
 			parameters.Add("@reopened_on", criteria.ReopenedOn);
 			parameters.Add("@effective_betting_percentage", criteria.EffectiveBettingPercentage);
-			parameters.Add("@licenseetxid", criteria.LicenseeTxId);
 			parameters.Add("@actiontype", criteria.ActionType);
 			parameters.Add("@updated_on", criteria.UpdatedOn);
 			parameters.Add("@created_on", criteria.CreatedOn);
@@ -138,8 +138,7 @@ public class GameRoundRepository : IGameRoundRepository
 						"settle_amount => @settle_amount, " +
 						"commission => @commission, " +
 						"turnover => @turnover, " +
-						"pay_out => @pay_out, " +
-						"extra_status => @extra_status, " +
+						"payout => @payout, " +
 						"tie_bet_adjustment => @tie_bet_adjustment, " +
 						"client_status => @client_status, " +
 						"reopen_turnover_adjustment => @reopen_turnover_adjustment, " +
@@ -147,9 +146,7 @@ public class GameRoundRepository : IGameRoundRepository
 						"effective_betting_percentage => @effective_betting_percentage, " +
 						"actiontype => @actiontype);";
 
-			var result = await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
-
-			Console.WriteLine(result.ToString());
+			await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
 		}
 	}
 }

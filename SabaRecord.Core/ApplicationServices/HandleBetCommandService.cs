@@ -32,7 +32,8 @@ public class HandleBetCommandService(
 			var id = existedRoundId.HasValue ? existedRoundId : await serialNumberGenerator.GenerateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
 			var roundStatus = command.BetState is BetState.Waiting or BetState.Running ? RoundStatus.Open : RoundStatus.Closed;
-			var roundCriteria = new GameRoundSetCriteria()
+
+			await ProcessHandleAsync(command.Action, new GameRoundSetCriteria()
 			{
 				Id = (Guid)id,
 				ActionType = command.Action,
@@ -48,13 +49,14 @@ public class HandleBetCommandService(
 				ExternalClosedOn = command.ExternalClosedOn,
 				BetType = (short)command.BetType,
 				Status = (short)roundStatus,
+				LicenseeTxId = command.LicenseeTxid,
 				BetAmount = ConvertPlatformRounds(exchangeRates, command.Bet),
 				ActualAmount = ConvertPlatformRounds(exchangeRates, command.ActualAmount),
 				Payout = ConvertPlatformRounds(exchangeRates, command.WinLoss),
 				ClientStatus = (short)GetClientStatus(command.BetState),
 				CreatedOn = DateTimeOffset.UtcNow.DateTime,
 				UpdatedOn = DateTimeOffset.UtcNow.DateTime,
-			};
+			});
 		}
 		catch (Exception ex)
 		{
