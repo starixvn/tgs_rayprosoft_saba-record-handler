@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using SabaRecord.Core.Constant;
+using SabaRecord.Core.Models.Criteria.GameRound;
 using SabaRecord.Core.Models.Enum;
 using SabaRecord.Core.Repositories;
 using Tgs.GameRecord.Handle.Common.Protos;
@@ -28,9 +30,9 @@ public class HandleBetCommandService(
 
 			var existedRoundId = await roundRepository.GetIdAsync(gameProviderId, gameInfo.GameId, playerInfo.WalletId, command.ExternalRoundId);
 			var id = existedRoundId.HasValue ? existedRoundId : await serialNumberGenerator.GenerateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-			var roundStatus = command.BetState is BetState.Waiting or BetState.Running ? RoundStatus.Open : RoundStatus.Closed;
 
-			var roundCriteria = new Models.Criteria.GameRound.GameRoundSetCriteria()
+			var roundStatus = command.BetState is BetState.Waiting or BetState.Running ? RoundStatus.Open : RoundStatus.Closed;
+			var roundCriteria = new GameRoundSetCriteria()
 			{
 				Id = (Guid)id,
 				ActionType = command.Action,
@@ -45,25 +47,38 @@ public class HandleBetCommandService(
 				ExternalCreatedOn = command.ExternalCreatedOn,
 				ExternalClosedOn = command.ExternalClosedOn,
 				BetType = (short)command.BetType,
+				Status = (short)roundStatus,
 				BetAmount = ConvertPlatformRounds(exchangeRates, command.Bet),
 				ActualAmount = ConvertPlatformRounds(exchangeRates, command.ActualAmount),
-				ValidBetAmount = ConvertPlatformRounds(exchangeRates, command.ValidBet),
-				SettleAmount = ConvertPlatformRounds(exchangeRates, command.Settle),
-				Commission = ConvertPlatformRounds(exchangeRates, command.Commission),
-				Turnover = ConvertPlatformRounds(exchangeRates, command.Turnover),
-				Payout = ConvertPlatformRounds(exchangeRates, command.Payout),
-				Status = (short)roundStatus,
+				Payout = ConvertPlatformRounds(exchangeRates, command.WinLoss),
 				ClientStatus = (short)GetClientStatus(command.BetState),
 				CreatedOn = DateTimeOffset.UtcNow.DateTime,
 				UpdatedOn = DateTimeOffset.UtcNow.DateTime,
 			};
-			// TO DO: Insert Rounds Detail
-			await roundRepository.GameRoundSetAsync(roundCriteria);
 		}
 		catch (Exception ex)
 		{
 			Console.WriteLine(ex.ToString());
 			_ = SentrySdk.CaptureException(ex);
+		}
+	}
+
+	private async Task ProcessHandleAsync(string action, GameRoundSetCriteria criteria)
+	{
+		switch (action)
+		{
+			case HandleAction.ConfirmBet:
+				await roundRepository.ConfirmBetAsync(criteria);
+				return;
+
+			case HandleAction.Settle:
+			case HandleAction.Unsettle:
+			case HandleAction.Resettle:
+				await roundRepository.SettleAsync(criteria);
+				return;
+
+			default:
+				throw new InvalidOperationException($"Invalid Action: {action}");
 		}
 	}
 

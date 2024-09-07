@@ -2,6 +2,7 @@
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using SabaRecord.Core.Models.Criteria;
 using SabaRecord.Core.Models.Criteria.GameRound;
 using SabaRecord.Core.Repositories;
 
@@ -40,7 +41,44 @@ public class GameRoundRepository : IGameRoundRepository
 		}
 	}
 
-	public async Task GameRoundSetAsync(GameRoundSetCriteria criteria)
+	public async Task ConfirmBetAsync(GameRoundSetCriteria criteria)
+	{
+		using (IDbConnection db = new NpgsqlConnection(_connectionString))
+		{
+			var parameters = new DynamicParameters();
+
+			parameters.Add("@id", criteria.Id);
+			parameters.Add("@external_round_id", criteria.ExternalRoundId);
+			parameters.Add("@game_provider_id", criteria.GameProviderId);
+			parameters.Add("@player_code", criteria.PlayerCode);
+			parameters.Add("@game_id", criteria.GameId);
+			parameters.Add("@currency_code", criteria.CurrencyCode);
+			parameters.Add("@game_provider_configuration_id", criteria.GameProviderConfigurationId);
+			parameters.Add("@wallet_id", criteria.WalletId);
+			parameters.Add("@brand_id", criteria.BrandId);
+			parameters.Add("@licenseetxid", criteria.LicenseeTxId);
+			parameters.Add("@actiontype", criteria.ActionType);
+
+			string sqlQuery = "CALL bet.bet_rounds_set(" +
+					"id => @id, " +
+					"external_round_id => @external_round_id, " +
+					"game_provider_id => @game_provider_id, " +
+					"player_code => @player_code, " +
+					"game_id => @game_id, " +
+					"currency_code => @currency_code, " +
+					"game_provider_configuration_id => @game_provider_configuration_id, " +
+					"wallet_id => @wallet_id, " +
+					"brand_id => @brand_id, " +
+					"licenseetxid => @licenseetxid, " +
+					"actiontype => @actiontype);";
+
+			var result = await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
+
+			Console.WriteLine(result.ToString());
+		}
+	}
+
+	public async Task SettleAsync(GameRoundSetCriteria criteria)
 	{
 		using (IDbConnection db = new NpgsqlConnection(_connectionString))
 		{
@@ -66,12 +104,13 @@ public class GameRoundRepository : IGameRoundRepository
 			parameters.Add("@settle_amount", criteria.SettleAmount);
 			parameters.Add("@commission", criteria.Commission);
 			parameters.Add("@turnover", criteria.Turnover);
-			parameters.Add("@payout", criteria.Payout);
+			parameters.Add("@pay_out", criteria.Payout);
 			parameters.Add("@tie_bet_adjustment", criteria.TieBetAdjustment);
 			parameters.Add("@client_status", criteria.ClientStatus);
 			parameters.Add("@reopen_turnover_adjustment", criteria.ReopenTurnoverAdjustment);
 			parameters.Add("@reopened_on", criteria.ReopenedOn);
 			parameters.Add("@effective_betting_percentage", criteria.EffectiveBettingPercentage);
+			parameters.Add("@licenseetxid", criteria.LicenseeTxId);
 			parameters.Add("@actiontype", criteria.ActionType);
 			parameters.Add("@updated_on", criteria.UpdatedOn);
 			parameters.Add("@created_on", criteria.CreatedOn);
@@ -99,7 +138,8 @@ public class GameRoundRepository : IGameRoundRepository
 						"settle_amount => @settle_amount, " +
 						"commission => @commission, " +
 						"turnover => @turnover, " +
-						"payout => @payout, " +
+						"pay_out => @pay_out, " +
+						"extra_status => @extra_status, " +
 						"tie_bet_adjustment => @tie_bet_adjustment, " +
 						"client_status => @client_status, " +
 						"reopen_turnover_adjustment => @reopen_turnover_adjustment, " +
@@ -107,24 +147,9 @@ public class GameRoundRepository : IGameRoundRepository
 						"effective_betting_percentage => @effective_betting_percentage, " +
 						"actiontype => @actiontype);";
 
-			var result = await db.QueryAsync<object>(sqlQuery, parameters);
+			var result = await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
 
 			Console.WriteLine(result.ToString());
-		}
-	}
-
-	public async Task GameRoundDetailSetAsync(GameRoundDetailSetCriteria criteria)
-	{
-		using (IDbConnection db = new NpgsqlConnection(_connectionString))
-		{
-			var parameters = new DynamicParameters();
-
-			parameters.Add("@p_id ", criteria.Id);
-			parameters.Add("@p_data", criteria.Data);
-
-			string sqlQuery = "CALL bet.Bet_round_details_set(@p_id, @p_data);";
-
-			_ = await db.ExecuteAsync(sqlQuery, parameters);
 		}
 	}
 }

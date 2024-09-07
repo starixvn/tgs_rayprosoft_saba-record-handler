@@ -31,4 +31,6 @@ public class GameRoundSetCriteria
 	public decimal EffectiveBettingPercentage { get; set; } // numeric
 	public string ActionType { get; set; } // character varying
 	public short BetType { get; internal set; } // smallint varying
+	public string ExtraStatus { get; internal set; }
+	public long LicenseeTxId { get; set; }
 }

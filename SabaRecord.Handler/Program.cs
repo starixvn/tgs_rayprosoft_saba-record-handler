@@ -65,7 +65,6 @@ builder.Services
  .AddNatsGlobPatternExchange(SabaNatsConst.HandleBetPublish);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddGameInterfaceCommon();
 builder.Services.AddGameInterfaceCore();
 builder.Services
 	.AddHttpLogging(logging => logging.LoggingFields = HttpLoggingFields.All)
