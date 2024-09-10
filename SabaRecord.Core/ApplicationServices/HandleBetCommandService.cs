@@ -26,12 +26,12 @@ public class HandleBetCommandService(
 			var playerInfo = await playerRepository.GetPlayerInfobyPlayerCodeAsync(command.PlayerCode);
 			var gameProviderConfigurationId = (Guid)await providerRepository.GetGameProviderConfigurationIdAsync(gameProviderId, playerInfo.BrandId);
 			var gameInfo = await providerRepository.GetGamesByProviderIdAsync(gameProviderId);
-
 			var exchangeRates = GetExchangeRates(playerInfo.PlayerCode, gameInfo.GameProviderCode);
 
 			var existedRoundId = await roundRepository.GetIdAsync(gameProviderId, gameInfo.GameId, playerInfo.WalletId, command.ExternalRoundId);
 			var id = existedRoundId.HasValue ? existedRoundId : await serialNumberGenerator.GenerateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 			var roundStatus = command.BetState is BetState.Waiting or BetState.Running ? RoundStatus.Open : RoundStatus.Closed;
+
 			// TO DO: Lack of Rounds Detail
 			var roundCriteria = new Models.Criteria.GameRound.GameRoundSetCriteria()
 			{
@@ -111,7 +111,7 @@ public class HandleBetCommandService(
 		catch (Exception ex)
 		{
 			Console.WriteLine(ex.ToString());
-			SentrySdk.CaptureException(ex);
+			_ = SentrySdk.CaptureException(ex);
 		}
 	}
 

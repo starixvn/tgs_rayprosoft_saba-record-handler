@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Options;
-using SabaRecord.Core;
 using SabaRecord.Core.ApplicationServices;
 using SabaRecord.Core.Configuarations;
 using Tgs.GameRecord.Handle.Common.Protos;
@@ -36,7 +35,7 @@ public class MessageConverter(IOptions<GameProviderInfo> gameRecordInfoOptions) 
 		{
 			settle = message.Settle;
 			payout = message.Payout;
-			externalClosedOn = message.WinlostDate.ToUniversalTime();
+			externalClosedOn = message.WinlostDate?.ToUniversalTime() ?? DateTimeOffset.UtcNow;
 
 			validBet = isCashout ? 0 : !isVoid ? message.BetAmount : 0;
 			turnover = isCashout ? 0 : !isVoid ? message.BetAmount : 0;
@@ -51,7 +50,7 @@ public class MessageConverter(IOptions<GameProviderInfo> gameRecordInfoOptions) 
 			PlayerCode = message.PlayerCode,
 			ExternalBetId = message.TxId,
 			ExternalRoundId = message.TxId,
-			ExternalCreatedOn = message.TransactionTime,
+			ExternalCreatedOn = message.TransactionTime ?? DateTime.UtcNow,
 			ExternalClosedOn = externalClosedOn?.DateTime,
 			ExternalPayoffOn = externalClosedOn?.DateTime,
 			// TO DO: ExternalResettleOn is hard code
