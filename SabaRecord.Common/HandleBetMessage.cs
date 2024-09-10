@@ -10,9 +10,9 @@ public class HandleBetMessage
 
 	public int BetState { get; set; } = 0;
 
-	public DateTime WinlostDate { get; set; } = DateTimeOffset.UnixEpoch.Date;
+	public DateTime? WinlostDate { get; set; }
 
-	public DateTime TransactionTime { get; set; } = DateTimeOffset.UnixEpoch.Date;
+	public DateTime? TransactionTime { get; set; }
 
 	public decimal Settle { get; set; } = 0;
 
