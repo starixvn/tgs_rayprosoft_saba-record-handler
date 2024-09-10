@@ -32,4 +32,5 @@ public class HandleBetCommand
 	public string AdditionalData { get; set; }
 	public string ExtraStatus { get; set; }
 	public long LicenseeTxid { get; set; }
+	public bool IsOnlyWinlostDateChanged { get; set; } = false;
 }

@@ -57,6 +57,7 @@ public class HandleBetCommandService(
 				ClientStatus = (short)GetClientStatus(command.BetState),
 				CreatedOn = DateTimeOffset.UtcNow.DateTime,
 				UpdatedOn = DateTimeOffset.UtcNow.DateTime,
+				IsOnlyWinlostDateChanged = command.IsOnlyWinlostDateChanged,
 			});
 		}
 		catch (Exception ex)

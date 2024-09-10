@@ -73,7 +73,8 @@ public class HandleBetMessageHandler(
 			GambleState = GambleState.None,
 			ResettleState = ResettleState.None,
 			JackpotState = JackpotState.None,
-			AdditionalData = JsonSerializer.Serialize(message)
+			AdditionalData = JsonSerializer.Serialize(message),
+			IsOnlyWinlostDateChanged = message.IsOnlyWinlostDateChanged
 		};
 	}
 }

@@ -23,4 +23,6 @@ public class HandleBetMessage
 	public string? RefId { get; set; } = "";
 
 	public long LicenseeTxid { get; set; }
+
+	public bool IsOnlyWinlostDateChanged { get; set; } = false;
 }
