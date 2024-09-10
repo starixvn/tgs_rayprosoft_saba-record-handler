@@ -64,23 +64,20 @@ public class GameRoundRepository : IGameRoundRepository
 
 	public async Task SettleAsync(GameRoundSetCriteria criteria)
 	{
-		using (IDbConnection db = new NpgsqlConnection(_connectionString))
-		{
-			var parameters = new DynamicParameters();
+		var parameters = new DynamicParameters();
 
-			parameters.Add("@id", criteria.Id);
-			parameters.Add("@external_round_id", criteria.ExternalRoundId);
-			parameters.Add("@brand_id", criteria.BrandId);
-			parameters.Add("@game_id", criteria.GameId);
-			parameters.Add("@external_closed_on", criteria.ExternalClosedOn);
-			parameters.Add("@status", criteria.Status);
-			parameters.Add("@payout", criteria.Payout);
-			parameters.Add("@actiontype", criteria.ActionType);
-			parameters.Add("@extrastatus", criteria.ExtraStatus);
-			parameters.Add("@refid", criteria.RefId);
+		parameters.Add("@id", criteria.Id);
+		parameters.Add("@external_round_id", criteria.ExternalRoundId);
+		parameters.Add("@brand_id", criteria.BrandId);
+		parameters.Add("@game_id", criteria.GameId);
+		parameters.Add("@external_closed_on", criteria.ExternalClosedOn);
+		parameters.Add("@status", criteria.Status);
+		parameters.Add("@payout", criteria.Payout);
+		parameters.Add("@actiontype", criteria.ActionType);
+		parameters.Add("@extrastatus", criteria.ExtraStatus);
+		parameters.Add("@refid", criteria.RefId);
 
-			await CallBetRoundSetSPAsync(parameters);
-		}
+		await CallBetRoundSetSPAsync(parameters);
 	}
 
 	public async Task UnsettleAsync(GameRoundSetCriteria criteria)
