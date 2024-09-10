@@ -8,6 +8,7 @@ public class HandleBetCommand
 	public string GameProviderCode { get; set; }
 	public string PlayerCode { get; set; }
 	public string ExternalRoundId { get; set; }
+	public string? RefId { get; set; }
 	public string ExternalBetId { get; set; }
 	public string ExternalGameId { get; set; }
 	public DateTime? ExternalCreatedOn { get; set; }
@@ -25,7 +26,7 @@ public class HandleBetCommand
 	public decimal Settle { get; set; }
 	public decimal Commission { get; set; }
 	public decimal Turnover { get; set; }
-	public decimal WinLoss { get; set; }
+	public decimal Payout { get; set; }
 	public decimal Jackpot { get; set; }
 	public decimal ActualAmount { get; set; }
 	public string AdditionalData { get; set; }

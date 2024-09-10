@@ -36,8 +36,9 @@ public class HandleBetMessageHandler(
 					message.BetState,
 					message.WinlostDate,
 					message.TransactionTime,
-					message.WinLoss,
-					message.TxId
+					message.Payout,
+					message.TxId,
+					message.RefId
 				},
 				Message = "This message receiving handler."
 			}));
@@ -58,12 +59,13 @@ public class HandleBetMessageHandler(
 			ExternalGameId = _gameRecordInfoOptions.GameExternalId,
 			PlayerCode = message.PlayerCode,
 			ExternalBetId = message.TxId,
+			RefId = message.RefId,
 			ExternalRoundId = message.TxId,
 			ExternalCreatedOn = message.TransactionTime?.ToUniversalTime(),
 			ExternalClosedOn = externalClosedOn,
 			ExternalPayoffOn = externalClosedOn,
 			ExtraStatus = message.ExtraStatus,
-			WinLoss = message.WinLoss,
+			Payout = message.Payout,
 			ActualAmount = message.ActualAmount,
 			LicenseeTxid = message.LicenseeTxid,
 			BetState = (BetState)message.BetState,
