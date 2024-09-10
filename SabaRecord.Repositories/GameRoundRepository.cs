@@ -44,35 +44,22 @@ public class GameRoundRepository : IGameRoundRepository
 
 	public async Task ConfirmBetAsync(GameRoundSetCriteria criteria)
 	{
-		try
-		{
-			using (IDbConnection db = new NpgsqlConnection(_connectionString))
-			{
-				var parameters = new DynamicParameters();
+		var parameters = new DynamicParameters();
 
-				parameters.Add("@id", criteria.Id);
-				parameters.Add("@external_round_id", criteria.ExternalRoundId);
-				parameters.Add("@game_provider_id", criteria.GameProviderId);
-				parameters.Add("@player_code", criteria.PlayerCode);
-				parameters.Add("@game_id", criteria.GameId);
-				parameters.Add("@currency_code", criteria.CurrencyCode);
-				parameters.Add("@game_provider_configuration_id", criteria.GameProviderConfigurationId);
-				parameters.Add("@wallet_id", criteria.WalletId);
-				parameters.Add("@brand_id", criteria.BrandId);
-				parameters.Add("@licenseetxid", criteria.LicenseeTxId);
-				parameters.Add("@external_created_on", criteria.ExternalCreatedOn);
-				parameters.Add("@actiontype", criteria.ActionType);
+		parameters.Add("@id", criteria.Id);
+		parameters.Add("@external_round_id", criteria.ExternalRoundId);
+		parameters.Add("@game_provider_id", criteria.GameProviderId);
+		parameters.Add("@player_code", criteria.PlayerCode);
+		parameters.Add("@game_id", criteria.GameId);
+		parameters.Add("@currency_code", criteria.CurrencyCode);
+		parameters.Add("@game_provider_configuration_id", criteria.GameProviderConfigurationId);
+		parameters.Add("@wallet_id", criteria.WalletId);
+		parameters.Add("@brand_id", criteria.BrandId);
+		parameters.Add("@licenseetxid", criteria.LicenseeTxId);
+		parameters.Add("@external_created_on", criteria.ExternalCreatedOn);
+		parameters.Add("@actiontype", criteria.ActionType);
 
-				string sqlQuery = $"CALL {spName}({string.Join(", ", parameters.ParameterNames.Select(p => $"{p} => {p}"))});";
-
-				await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
-			}
-		}
-		catch (Exception ex)
-		{
-			SentrySdk.CaptureException(ex);
-			Console.WriteLine(ex.ToString());
-		}
+		await CallBetRoundSetSPAsync(parameters);
 	}
 
 	public async Task SettleAsync(GameRoundSetCriteria criteria)
@@ -91,7 +78,6 @@ public class GameRoundRepository : IGameRoundRepository
 			parameters.Add("@actiontype", criteria.ActionType);
 			parameters.Add("@extrastatus", criteria.ExtraStatus);
 			parameters.Add("@refid", criteria.RefId);
-
 
 			await CallBetRoundSetSPAsync(parameters);
 		}
@@ -129,6 +115,5 @@ public class GameRoundRepository : IGameRoundRepository
 			Console.WriteLine(ex.Message);
 			SentrySdk.CaptureException(ex);
 		}
-
 	}
 }
