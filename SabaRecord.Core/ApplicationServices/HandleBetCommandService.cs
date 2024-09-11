@@ -46,6 +46,7 @@ public class HandleBetCommandService(
 				ExternalClosedOn = command.ExternalClosedOn,
 				BetType = (short)command.BetType,
 				Status = command.BetState,
+				ExtraStatus = command.ExtraStatus,
 				LicenseeTxId = command.LicenseeTxid,
 				BetAmount = ConvertPlatformRounds(exchangeRates, command.Bet),
 				ActualAmount = ConvertPlatformRounds(exchangeRates, command.ActualAmount),
