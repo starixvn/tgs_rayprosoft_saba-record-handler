@@ -32,6 +32,13 @@ builder.Services
 		configuration.GetSection("PolicySettings").Bind(options);
 	})
 	.Services
+	.AddOptions<GameCurrencySettings>()
+	.Configure((GameCurrencySettings options, IServiceProvider sp) =>
+	{
+		var configuration = sp.GetRequiredService<IConfiguration>();
+		configuration.GetSection("GameCurrencySettings").Bind(options);
+	})
+	.Services
 	.AddOptions<CacheSettingsOptions>()
 	.Configure((CacheSettingsOptions options, IServiceProvider sp) =>
 	{

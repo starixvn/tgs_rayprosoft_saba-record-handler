@@ -15,5 +15,6 @@ public static class ServiceCollectionExtensions
 	public static IServiceCollection AddRepositories(this IServiceCollection services)
 		   => services.AddScoped<IPlayerRepository, PlayerRepositoryImp>()
 		.AddScoped<IProviderRepository, ProviderRepository>()
+		.AddScoped<IGameCurrencyRepository, GameCurrencyRepository>()
 		.AddScoped<IGameRoundRepository, GameRoundRepository>();
 }

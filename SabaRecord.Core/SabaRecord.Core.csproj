@@ -20,5 +20,9 @@
 	<PackageReference Include="Tgs.GameInterface.SabaService.Client" Version="1.0.4" />
 	<PackageReference Include="Tgs.SerialNumberGenerator" Version="1.0.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Helper\" />
+  </ItemGroup>
   
 </Project>

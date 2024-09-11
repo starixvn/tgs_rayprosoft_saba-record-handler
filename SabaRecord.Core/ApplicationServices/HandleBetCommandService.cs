@@ -13,7 +13,8 @@ public class HandleBetCommandService(
 	ISerialNumberGenerator serialNumberGenerator,
 	IPlayerRepository playerRepository,
 	IGameRoundRepository roundRepository,
-	IProviderRepository providerRepository
+	IProviderRepository providerRepository,
+	IGameCurrencyRepository gameCurrencyRepository
 	) : ICommandService<HandleBetCommand>
 {
 	public async ValueTask ExecuteAsync(HandleBetCommand command, CancellationToken cancellationToken = default)
@@ -24,7 +25,7 @@ public class HandleBetCommandService(
 			var playerInfo = await playerRepository.GetPlayerInfobyPlayerCodeAsync(command.PlayerCode);
 			var gameProviderConfigurationId = (Guid)await providerRepository.GetGameProviderConfigurationIdAsync(gameProviderId, playerInfo.BrandId);
 			var gameInfo = await providerRepository.GetGameInfoByExternalIdAsync(gameProviderId, command.ExternalGameId);
-			var exchangeRates = GetExchangeRates(playerInfo.PlayerCode, gameInfo.GameProviderCode);
+			var exchangeRates = gameCurrencyRepository.GetExchangeRates(playerInfo.PlayerCode, gameInfo.GameProviderCode);
 
 			await ProcessHandleAsync(command.Action, new GameRoundSetCriteria()
 			{
@@ -84,13 +85,6 @@ public class HandleBetCommandService(
 
 	private static decimal ConvertPlatformRounds(decimal exchangeRate, decimal amount)
 	=> amount == 0 ? amount : decimal.Round(amount * exchangeRate, 6, MidpointRounding.ToZero);
-
-	private static decimal GetExchangeRates(string gameProviderCode, string currencyCode)
-		=> GameCurrencySettings.GameProviderExchangeRates
-			.Where(x => x.GameProviderCode.Equals(gameProviderCode, StringComparison.InvariantCultureIgnoreCase)
-				&& x.CurrencyCode.Equals(currencyCode, StringComparison.OrdinalIgnoreCase))
-			.Select(x => x.ExchangeRate)
-			.SingleOrDefault(1);
 
 	private static string GetGameProviderCode(string gameProviderCode)
 		=> gameProviderCode.Split("-").First().ToLower();
