@@ -68,7 +68,7 @@ public class HandleBetMessageHandler(
 			Payout = message.Payout,
 			ActualAmount = message.ActualAmount,
 			LicenseeTxid = message.LicenseeTxid,
-			BetState = (BetState)message.BetState,
+			BetState = message.BetState,
 			FreeGameState = FreeGameState.None,
 			GambleState = GambleState.None,
 			ResettleState = ResettleState.None,

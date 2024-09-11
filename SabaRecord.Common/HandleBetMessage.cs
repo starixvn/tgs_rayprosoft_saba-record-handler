@@ -8,7 +8,7 @@ public class HandleBetMessage
 
 	public string ExtraStatus { get; set; } = "";
 
-	public int BetState { get; set; } = 0;
+	public string BetState { get; set; } = "";
 
 	public DateTime? WinlostDate { get; set; }
 
