@@ -77,8 +77,11 @@ public class HandleBetCommandService(
 
 			case HandleAction.Settle:
 			case HandleAction.Unsettle:
-			case HandleAction.Resettle:
 				await roundRepository.SettleAsync(criteria);
+				return;
+
+			case HandleAction.Resettle:
+				await roundRepository.ResettleAsync(criteria);
 				return;
 
 			default:

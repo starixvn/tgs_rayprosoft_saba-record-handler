@@ -80,6 +80,25 @@ public class GameRoundRepository : IGameRoundRepository
 		await CallBetRoundSetSPAsync(parameters);
 	}
 
+	public async Task ResettleAsync(GameRoundSetCriteria criteria)
+	{
+		var parameters = new DynamicParameters();
+
+		parameters.Add("@id", criteria.Id);
+		parameters.Add("@external_round_id", criteria.ExternalRoundId);
+		parameters.Add("@brand_id", criteria.BrandId);
+		parameters.Add("@game_id", criteria.GameId);
+		parameters.Add("@external_closed_on", criteria.ExternalClosedOn);
+		parameters.Add("@status", criteria.Status);
+		parameters.Add("@payout", criteria.Payout);
+		parameters.Add("@actiontype", criteria.ActionType);
+		parameters.Add("@extrastatus", criteria.ExtraStatus);
+		parameters.Add("@refid", criteria.RefId);
+		parameters.Add("@isonlywinlostdatechanged", criteria.IsOnlyWinlostDateChanged);
+
+		await CallBetRoundSetSPAsync(parameters);
+	}
+
 	public async Task UnsettleAsync(GameRoundSetCriteria criteria)
 	{
 		var parameters = new DynamicParameters();
