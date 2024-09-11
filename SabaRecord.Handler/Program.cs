@@ -1,15 +1,16 @@
 using Microsoft.AspNetCore.HttpLogging;
 using NATS.Client.Core;
+using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using SabaRecord.Handler;
+using SabaRecord.Core.Configuarations;
 using SabaRecord.Core.DependencyInjection;
+using SabaRecord.Handler;
+using SabaRecord.Handler.Messages;
 using SabaRecord.Repositories.DependencyInjection;
 using Tgs.GameRecord.Saba.Common;
 using Tgs.MessageQueue.Nats.Serializers;
-using SabaRecord.Handler.Messages;
-using SabaRecord.Core.Configuarations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,8 @@ builder.Services
 				&& !excludeExtensions.Any(
 					ext => httpContext.Request.Path.Value.EndsWith($".{ext}")))
 		.AddHttpClientInstrumentation()
+		.SetSampler(new AlwaysOnSampler())
+		.AddNpgsql()
 		.AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
 		.AddOtlpExporter(options => options.Endpoint = builder.Configuration.GetValue<Uri>("Otel:Collector") ?? new Uri("")))
 	.WithMetrics(meterBuiler => meterBuiler
