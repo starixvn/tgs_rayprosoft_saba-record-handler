@@ -2,9 +2,7 @@
 using MongoDB.Driver;
 using SabaRecord.Core.Constant;
 using SabaRecord.Core.Models.Criteria.GameRound;
-using SabaRecord.Core.Models.Enum;
 using SabaRecord.Core.Repositories;
-using Tgs.GameRecord.Handle.Common.Protos;
 using Tgs.SerialNumberGenerator;
 using Tgs.ServiceUtility;
 
@@ -31,8 +29,6 @@ public class HandleBetCommandService(
 			var existedRoundId = await roundRepository.GetIdAsync(gameProviderId, gameInfo.GameId, playerInfo.WalletId, command.ExternalRoundId);
 			var id = existedRoundId.HasValue ? existedRoundId : await serialNumberGenerator.GenerateAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-			var roundStatus = command.BetState is BetState.Waiting or BetState.Running ? RoundStatus.Open : RoundStatus.Closed;
-
 			await ProcessHandleAsync(command.Action, new GameRoundSetCriteria()
 			{
 				Id = (Guid)id,
@@ -49,12 +45,11 @@ public class HandleBetCommandService(
 				ExternalCreatedOn = command.ExternalCreatedOn,
 				ExternalClosedOn = command.ExternalClosedOn,
 				BetType = (short)command.BetType,
-				Status = roundStatus.ToString(),
+				Status = command.BetState.ToString(),
 				LicenseeTxId = command.LicenseeTxid,
 				BetAmount = ConvertPlatformRounds(exchangeRates, command.Bet),
 				ActualAmount = ConvertPlatformRounds(exchangeRates, command.ActualAmount),
 				Payout = ConvertPlatformRounds(exchangeRates, command.Payout),
-				ClientStatus = (short)GetClientStatus(command.BetState),
 				CreatedOn = DateTimeOffset.UtcNow.DateTime,
 				UpdatedOn = DateTimeOffset.UtcNow.DateTime,
 				IsOnlyWinlostDateChanged = command.IsOnlyWinlostDateChanged,
@@ -87,31 +82,6 @@ public class HandleBetCommandService(
 			default:
 				throw new InvalidOperationException($"Invalid Action: {action}");
 		}
-	}
-
-	private static RoundClientStatus GetClientStatus(BetState betState)
-	{
-		if (betState is BetState.Waiting or BetState.Running)
-		{
-			return RoundClientStatus.Open;
-		}
-
-		if (betState is BetState.Loss or BetState.HalfLoss)
-		{
-			return RoundClientStatus.Loss;
-		}
-
-		if (betState is BetState.Win or BetState.HalfWin)
-		{
-			return RoundClientStatus.Win;
-		}
-
-		if (betState is BetState.Draw)
-		{
-			return RoundClientStatus.Draw;
-		}
-
-		return RoundClientStatus.Void;
 	}
 
 	private static decimal ConvertPlatformRounds(decimal exchangeRate, decimal amount)

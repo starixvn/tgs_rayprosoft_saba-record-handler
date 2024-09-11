@@ -26,7 +26,6 @@ public class GameRoundSetCriteria
 	public decimal Turnover { get; set; } // numeric
 	public decimal Payout { get; set; } // numeric
 	public decimal TieBetAdjustment { get; set; } // numeric
-	public short ClientStatus { get; set; } // smallint
 	public decimal ReopenTurnoverAdjustment { get; set; } // numeric
 	public DateTime? ReopenedOn { get; set; } // timestamp with time zone (nullable)
 	public decimal EffectiveBettingPercentage { get; set; } // numeric
