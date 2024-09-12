@@ -24,13 +24,6 @@ builder.Services
 	})
 	.Services
 	.AddSingleton<MongoDBConnectionManager>()
-	.AddOptions<GameProviderInfo>()
-	.Configure((GameProviderInfo options, IServiceProvider sp) =>
-	{
-		var configuration = sp.GetRequiredService<IConfiguration>();
-		configuration.GetSection("GameProviderInfo").Bind(options);
-	})
-	.Services
 	.AddOptions<PolicySettingsOptions>()
 	.Configure((PolicySettingsOptions options, IServiceProvider sp) =>
 	{

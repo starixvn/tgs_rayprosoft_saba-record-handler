@@ -1,10 +1,8 @@
 ﻿using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 using SabaRecord.Common;
 using SabaRecord.Core;
 using SabaRecord.Core.ApplicationServices;
-using SabaRecord.Core.Configuarations;
 using Tgs.GameRecord.Handle.Common.Protos;
 using Valhalla.MessageQueue;
 
@@ -12,11 +10,8 @@ namespace SabaRecord.Handler.Messages;
 
 public class HandleBetMessageHandler(
 	ILogger<HandleBetMessageHandler> logger,
-	IOptions<GameProviderInfo> gameRecordInfoOptions,
 	IHandleBetDispatcher dispatcher) : IMessageHandler<ReadOnlyMemory<byte>>
 {
-	private readonly GameProviderInfo _gameRecordInfoOptions = gameRecordInfoOptions.Value;
-
 	public ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
 	{
 		var json = Encoding.UTF8.GetString(data.Span);
@@ -55,8 +50,8 @@ public class HandleBetMessageHandler(
 		return new HandleBetCommand
 		{
 			Action = message.Action,
-			GameProviderCode = _gameRecordInfoOptions.GameProviderCode,
-			ExternalGameId = _gameRecordInfoOptions.GameExternalId,
+			GameProviderCode = message.GameProviderCode,
+			ExternalGameId = message.GameExternalId,
 			PlayerCode = message.PlayerCode,
 			ExternalBetId = message.TxId,
 			RefId = message.RefId,
