@@ -1,6 +1,6 @@
 ﻿namespace SabaRecord.Core.Constant
 {
-	internal static class HandleAction
+	public static class HandleAction
 	{
 		public const string ConfirmBet = "ConfirmBet";
 		public const string Settle = "Settle";
