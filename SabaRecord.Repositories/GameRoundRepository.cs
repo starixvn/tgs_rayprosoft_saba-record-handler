@@ -18,35 +18,10 @@ public class GameRoundRepository : IGameRoundRepository
 		_connectionString = configuration.GetConnectionString("Tgs")!;
 	}
 
-	public async Task<Guid?> GetIdAsync(Guid gameProviderId, int gameId, Guid walletId, string externalRoundId)
-	{
-		using (IDbConnection db = new NpgsqlConnection(_connectionString))
-		{
-			var parameters = new DynamicParameters();
-
-			parameters.Add("@external_round_id", externalRoundId);
-			parameters.Add("@game_provider_id", gameProviderId);
-			parameters.Add("@game_id", gameId);
-			parameters.Add("@wallet_id", walletId);
-
-			string sqlQuery = @"SELECT r.id
-								FROM bet.rounds r
-								WHERE r.external_round_id = @external_round_id
-								  AND r.game_provider_id = @game_provider_id
-								  AND r.game_id = @game_id
-								  AND r.wallet_id = @wallet_id;";
-
-			var ids = await db.QueryFirstOrDefaultAsync<Guid?>(sqlQuery, parameters); // check correct property later
-
-			return ids;
-		}
-	}
-
 	public async Task ConfirmBetAsync(GameRoundSetCriteria criteria)
 	{
 		var parameters = new DynamicParameters();
 
-		parameters.Add("@id", criteria.Id);
 		parameters.Add("@external_round_id", criteria.ExternalRoundId);
 		parameters.Add("@game_provider_id", criteria.GameProviderId);
 		parameters.Add("@player_code", criteria.PlayerCode);
@@ -66,7 +41,6 @@ public class GameRoundRepository : IGameRoundRepository
 	{
 		var parameters = new DynamicParameters();
 
-		parameters.Add("@id", criteria.Id);
 		parameters.Add("@external_round_id", criteria.ExternalRoundId);
 		parameters.Add("@brand_id", criteria.BrandId);
 		parameters.Add("@game_id", criteria.GameId);
@@ -84,7 +58,6 @@ public class GameRoundRepository : IGameRoundRepository
 	{
 		var parameters = new DynamicParameters();
 
-		parameters.Add("@id", criteria.Id);
 		parameters.Add("@external_round_id", criteria.ExternalRoundId);
 		parameters.Add("@brand_id", criteria.BrandId);
 		parameters.Add("@game_id", criteria.GameId);
@@ -103,7 +76,6 @@ public class GameRoundRepository : IGameRoundRepository
 	{
 		var parameters = new DynamicParameters();
 
-		parameters.Add("@id", criteria.Id);
 		parameters.Add("@extrastatus", criteria.ExtraStatus);
 		parameters.Add("@external_round_id", criteria.ExternalRoundId);
 		parameters.Add("@licenseetxid", criteria.LicenseeTxId);
