@@ -78,7 +78,7 @@ public class GameRoundRepository : IGameRoundRepository
 
 		parameters.Add("@extrastatus", criteria.ExtraStatus);
 		parameters.Add("@external_round_id", criteria.ExternalRoundId);
-		parameters.Add("@licenseetxid", criteria.LicenseeTxId);
+		parameters.Add("@refid", criteria.RefId);
 		parameters.Add("@brand_id", criteria.BrandId);
 		parameters.Add("@game_id", criteria.GameId);
 		parameters.Add("@status", criteria.Status);
