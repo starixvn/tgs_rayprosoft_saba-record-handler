@@ -1,18 +1,18 @@
 ﻿using System.Text;
 using System.Text.Json;
 using SabaRecord.Common;
-using SabaRecord.Core;
 using SabaRecord.Core.ApplicationServices;
 using Tgs.GameRecord.Handle.Common.Protos;
+using Tgs.ServiceUtility;
 using Valhalla.MessageQueue;
 
 namespace SabaRecord.Handler.Messages;
 
 public class HandleBetMessageHandler(
 	ILogger<HandleBetMessageHandler> logger,
-	IHandleBetDispatcher dispatcher) : IMessageHandler<ReadOnlyMemory<byte>>
+	IServiceProvider serviceProvider) : IMessageHandler<ReadOnlyMemory<byte>>
 {
-	public ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
+	public async ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
 	{
 		var json = Encoding.UTF8.GetString(data.Span);
 		var message = JsonSerializer.Deserialize<HandleBetMessage>(json)
@@ -38,9 +38,12 @@ public class HandleBetMessageHandler(
 				Message = "This message receiving handler."
 			}));
 
-		return dispatcher.PushCommandAsync(
+		using var scope = serviceProvider.CreateScope();
+		var service = scope.ServiceProvider.GetRequiredService<ICommandService<HandleBetCommand>>();
+		await service.ExecuteAsync(
 			command: ConvertToHandleBetCommand(message),
-			cancellationToken: cancellationToken);
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 	}
 
 	public HandleBetCommand ConvertToHandleBetCommand(HandleBetMessage message)
