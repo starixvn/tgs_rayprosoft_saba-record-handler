@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using SabaRecord.Core.Constant;
 using SabaRecord.Core.Models.Criteria.GameRound;
@@ -8,7 +9,7 @@ using Tgs.ServiceUtility;
 
 namespace SabaRecord.Core.ApplicationServices;
 
-public class HandleBetCommandService(
+public partial class HandleBetCommandService(
 	ILogger<HandleBetCommandService> logger,
 	ISerialNumberGenerator serialNumberGenerator,
 	IPlayerRepository playerRepository,
@@ -16,6 +17,9 @@ public class HandleBetCommandService(
 	IProviderRepository providerRepository
 	) : ICommandService<HandleBetCommand>
 {
+	[GeneratedRegex("SABAPLUS.*")]
+	private static partial Regex SabaPlusProviderRegex();
+
 	public async ValueTask ExecuteAsync(HandleBetCommand command, CancellationToken cancellationToken = default)
 	{
 		try
@@ -50,6 +54,7 @@ public class HandleBetCommandService(
 				CreatedOn = DateTimeOffset.UtcNow.DateTime,
 				UpdatedOn = DateTimeOffset.UtcNow.DateTime,
 				IsOnlyWinlostDateChanged = command.IsOnlyWinlostDateChanged,
+				GameProviderCode = GetGameProviderCode(command.GameProviderCode),
 			});
 		}
 		catch (Exception ex)
@@ -90,4 +95,12 @@ public class HandleBetCommandService(
 				&& x.CurrencyCode.Equals(currencyCode, StringComparison.OrdinalIgnoreCase))
 			.Select(x => x.ExchangeRate)
 			.SingleOrDefault(1);
+
+	private static string GetGameProviderCode(string gameProviderCode)
+		=> gameProviderCode switch
+		{
+			"SABASW" => "sabasw",
+			var x when SabaPlusProviderRegex().IsMatch(x) => "sabaplus",
+			_ => throw new InvalidOperationException($"Not supported this provider: {gameProviderCode}")
+		};
 }
