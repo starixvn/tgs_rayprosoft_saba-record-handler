@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using SabaRecord.Core.Constant;
 using SabaRecord.Core.Models.Criteria.GameRound;
@@ -9,7 +8,7 @@ using Tgs.ServiceUtility;
 
 namespace SabaRecord.Core.ApplicationServices;
 
-public partial class HandleBetCommandService(
+public class HandleBetCommandService(
 	ILogger<HandleBetCommandService> logger,
 	ISerialNumberGenerator serialNumberGenerator,
 	IPlayerRepository playerRepository,
@@ -17,9 +16,6 @@ public partial class HandleBetCommandService(
 	IProviderRepository providerRepository
 	) : ICommandService<HandleBetCommand>
 {
-	[GeneratedRegex("SABAPLUS.*")]
-	private static partial Regex SabaPlusProviderRegex();
-
 	public async ValueTask ExecuteAsync(HandleBetCommand command, CancellationToken cancellationToken = default)
 	{
 		try
@@ -96,11 +92,5 @@ public partial class HandleBetCommandService(
 			.Select(x => x.ExchangeRate)
 			.SingleOrDefault(1);
 
-	private static string GetGameProviderCode(string gameProviderCode)
-		=> gameProviderCode switch
-		{
-			"SABASW" => "sabasw",
-			var x when SabaPlusProviderRegex().IsMatch(x) => "sabaplus",
-			_ => throw new InvalidOperationException($"Not supported this provider: {gameProviderCode}")
-		};
+	private static string GetGameProviderCode(string gameProviderCode) => gameProviderCode.ToLower();
 }
