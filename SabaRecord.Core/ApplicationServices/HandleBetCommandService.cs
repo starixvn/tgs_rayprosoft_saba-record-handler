@@ -23,7 +23,7 @@ public class HandleBetCommandService(
 			var gameProviderId = (Guid)await providerRepository.GetProviderIdByCodeAsync(command.GameProviderCode);
 			var playerInfo = await playerRepository.GetPlayerInfobyPlayerCodeAsync(command.PlayerCode);
 			var gameProviderConfigurationId = (Guid)await providerRepository.GetGameProviderConfigurationIdAsync(gameProviderId, playerInfo.BrandId);
-			var gameInfo = await providerRepository.GetGamesByProviderIdAsync(gameProviderId);
+			var gameInfo = await providerRepository.GetGameInfoByExternalIdAsync(gameProviderId, command.ExternalGameId);
 			var exchangeRates = GetExchangeRates(playerInfo.PlayerCode, gameInfo.GameProviderCode);
 
 			await ProcessHandleAsync(command.Action, new GameRoundSetCriteria()
