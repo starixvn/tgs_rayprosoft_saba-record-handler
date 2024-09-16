@@ -92,5 +92,6 @@ public class HandleBetCommandService(
 			.Select(x => x.ExchangeRate)
 			.SingleOrDefault(1);
 
-	private static string GetGameProviderCode(string gameProviderCode) => gameProviderCode.ToLower();
+	private static string GetGameProviderCode(string gameProviderCode)
+		=> gameProviderCode.Split("-").First().ToLower();
 }
