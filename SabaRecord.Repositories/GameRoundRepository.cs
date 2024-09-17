@@ -86,6 +86,30 @@ public class GameRoundRepository : IGameRoundRepository
 
 		await CallBetRoundSetSPAsync(parameters, criteria.GameProviderCode);
 	}
+	
+	public async Task PlaceBetAndSettleAsync(GameRoundSetCriteria criteria)
+	{
+		var parameters = new DynamicParameters();
+
+		parameters.Add("@actiontype", "Settle");
+		parameters.Add("@external_round_id", criteria.ExternalRoundId);
+		parameters.Add("@game_provider_id", criteria.GameProviderId);
+		parameters.Add("@player_code", criteria.PlayerCode);
+		parameters.Add("@game_id", criteria.GameId);
+		parameters.Add("@currency_code", criteria.CurrencyCode);
+		parameters.Add("@game_provider_configuration_id", criteria.GameProviderConfigurationId);
+		parameters.Add("@wallet_id", criteria.WalletId);
+		parameters.Add("@brand_id", criteria.BrandId);
+		parameters.Add("@licenseetxid", criteria.LicenseeTxId);
+		parameters.Add("@external_created_on", criteria.ExternalCreatedOn);
+		parameters.Add("@external_closed_on", criteria.ExternalClosedOn);
+		parameters.Add("@status", criteria.Status);
+		parameters.Add("@payout", criteria.Payout);
+		parameters.Add("@extrastatus", criteria.ExtraStatus);
+		parameters.Add("@refid", criteria.RefId);
+
+		await CallBetRoundSetSPAsync(parameters, criteria.GameProviderCode);
+	}
 
 	private async Task CallBetRoundSetSPAsync(DynamicParameters parameters, string provider)
 	{

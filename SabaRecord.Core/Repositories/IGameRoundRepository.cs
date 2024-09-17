@@ -9,4 +9,6 @@ public interface IGameRoundRepository
 	Task SettleAsync(GameRoundSetCriteria criteria);
 
 	Task ResettleAsync(GameRoundSetCriteria criteria);
+
+	Task PlaceBetAndSettleAsync(GameRoundSetCriteria criteria);
 }

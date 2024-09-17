@@ -67,16 +67,16 @@ public class HandleBetCommandService(
 			case HandleAction.ConfirmBet:
 				await roundRepository.ConfirmBetAsync(criteria);
 				return;
-
 			case HandleAction.Settle:
 			case HandleAction.Unsettle:
 				await roundRepository.SettleAsync(criteria);
 				return;
-
 			case HandleAction.Resettle:
 				await roundRepository.ResettleAsync(criteria);
 				return;
-
+			case HandleAction.PlaceBetAndSettle:
+				await roundRepository.PlaceBetAndSettleAsync(criteria);
+				return;
 			default:
 				throw new InvalidOperationException($"Invalid Action: {action}");
 		}
