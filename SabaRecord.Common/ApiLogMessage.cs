@@ -9,7 +9,7 @@ public record ApiLogMessage
 	[Required]
 	public string Action { get; init; } = default!;
 
-	public object Request { get; init; } = default!;
+	public dynamic Request { get; init; } = default!;
 
-	public object Response { get; init; } = default!;
+	public dynamic Response { get; init; } = default!;
 }

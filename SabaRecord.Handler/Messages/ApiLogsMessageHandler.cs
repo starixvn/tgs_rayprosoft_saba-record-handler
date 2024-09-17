@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
 using SabaRecord.Common;
 using SabaRecord.Core.ApplicationServices;
 using Tgs.ServiceUtility;
@@ -14,29 +14,34 @@ public class ApiLogsMessageHandler(
 	public async ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
 	{
 		var json = Encoding.UTF8.GetString(data.Span);
-		var message = JsonSerializer.Deserialize<ApiLogMessage>(json)
+
+		var logData = JsonConvert.DeserializeObject<ApiLogMessage>(json)
 			?? throw new NullReferenceException("The request data resolves to a null value");
 
+		var key = (string)logData.Request["key"];
+		var action = (string)logData.Request.message.Action;
+		var request = logData.Request;
+		var response = logData.Response;
+
 		logger.LogInformation("{logInformation}",
-			JsonSerializer.Serialize(new
+			JsonConvert.SerializeObject(new
 			{
 				LogOn = DateTime.Now.ToString("u"),
 				Subject = subject,
 				Data = new
 				{
-					message.Key,
-					message.Action,
-					message.Request,
-					message.Response,
+					key,
+					action,
+					request,
+					response,
 				},
-				Message = "This message receiving handler."
+				Message = "This logData receiving handler."
 			}));
 
 		using var scope = serviceProvider.CreateScope();
 		var service = scope.ServiceProvider.GetRequiredService<ICommandService<ApiLogsCommand>>();
-		await service.ExecuteAsync(
-			command: new ApiLogsCommand(message.Key, message.Action, message.Request, message.Response),
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
+		var command = new ApiLogsCommand(key, action, JsonConvert.SerializeObject(request), JsonConvert.SerializeObject(response));
+
+		await service.ExecuteAsync(command, cancellationToken: cancellationToken).ConfigureAwait(false);
 	}
 }
