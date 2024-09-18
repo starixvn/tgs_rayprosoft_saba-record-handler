@@ -43,43 +43,6 @@ namespace SabaRecord.Repositories
 			return id;
 		}
 
-		public async Task<GameInfo?> GetGamesByProviderIdAsync(Guid gameProviderId)
-		{
-			string key = $"{typeof(ProviderRepository).Namespace!.Replace(".", "-").ToLower()}:GamesByProvider:{gameProviderId}";
-			if (!memoryCache.TryGetValue(key, out GameInfo? game))
-			{
-				gameProviderId = gameProviderId == default ? Guid.Parse("9d57276a-15ee-4e3f-a1cb-6cb7dd7bb641") : gameProviderId;
-				using (IDbConnection db = new NpgsqlConnection(connectionString))
-				{
-					string sqlQuery = @"
-						SELECT
-							id as GameId,
-							status,
-							external_id AS ExternalGameId,
-							game_provider_id AS GameProviderId,
-							sub_game AS SubGame,
-							available_currencies AS AvailableCurrencies,
-							code as GameCode,
-							name,
-							sub_game_provider_code AS SubGameProviderCode
-						FROM
-							dbo.games
-						WHERE
-							game_provider_id = @GameProviderId";
-
-					var parameters = new { GameProviderId = gameProviderId };
-					game = await db.QueryFirstOrDefaultAsync<GameInfo>(sqlQuery, parameters); // check correct property later
-
-					if (game is not null)
-					{
-						return memoryCache.Set(key, game, TimeSpan.FromMinutes(cacheSettings.ExpiredTimeInMinute));
-					}
-				}
-			}
-
-			return game;
-		}
-
 		public async Task<Guid?> GetGameProviderConfigurationIdAsync(Guid gameProviderId, Guid brandId)
 		{
 			string key = $"{typeof(ProviderRepository).Namespace!.Replace(".", "-").ToLower()}:GameProviderConfiguration:{gameProviderId}";
@@ -106,5 +69,44 @@ namespace SabaRecord.Repositories
 
 			return id;
 		}
+
+		public async Task<GameInfo?> GetGameInfoByExternalIdAsync(Guid gameProviderId, string externalId)
+		{
+			var key = BuildCacheKey($"GetGameInfoByExternalId::{gameProviderId}:{externalId}");
+
+			if (!memoryCache.TryGetValue(key, out GameInfo? gameInfo))
+			{
+				using IDbConnection db = new NpgsqlConnection(connectionString);
+				string sqlQuery = @"
+						SELECT
+							id as GameId,
+							status,
+							external_id AS ExternalGameId,
+							game_provider_id AS GameProviderId,
+							sub_game AS SubGame,
+							available_currencies AS AvailableCurrencies,
+							code as GameCode,
+							name,
+							sub_game_provider_code AS SubGameProviderCode
+						FROM
+							dbo.games
+						WHERE
+							external_id = @ExternalId AND game_provider_id = @GameProviderId";
+
+				var parameters = new { ExternalId = externalId, GameProviderId = gameProviderId };
+
+				gameInfo = await db.QueryFirstOrDefaultAsync<GameInfo>(sqlQuery, parameters);
+
+				if (gameInfo is not null)
+				{
+					return memoryCache.Set(key, gameInfo, TimeSpan.FromMinutes(cacheSettings.ExpiredTimeInMinute));
+				}
+			}
+
+			return gameInfo is null ? await GetGameInfoByExternalIdAsync(gameProviderId, "0") : gameInfo;
+		}
+
+		private static string BuildCacheKey(string action)
+			=> $"{typeof(ProviderRepository).Namespace!.Replace(".", "-").ToLower()}:{action}";
 	}
 }

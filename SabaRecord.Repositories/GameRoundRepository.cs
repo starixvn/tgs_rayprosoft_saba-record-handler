@@ -10,7 +10,7 @@ namespace SabaRecord.Repositories;
 
 public class GameRoundRepository : IGameRoundRepository
 {
-	private readonly string spName = "bet.bet_rounds_set";
+	private readonly string spTemplate = "bet.bet_rounds_{0}_set";
 	private readonly string _connectionString;
 
 	public GameRoundRepository(IConfiguration configuration)
@@ -34,7 +34,7 @@ public class GameRoundRepository : IGameRoundRepository
 		parameters.Add("@external_created_on", criteria.ExternalCreatedOn);
 		parameters.Add("@actiontype", criteria.ActionType);
 
-		await CallBetRoundSetSPAsync(parameters);
+		await CallBetRoundSetSPAsync(parameters, criteria.GameProviderCode);
 	}
 
 	public async Task SettleAsync(GameRoundSetCriteria criteria)
@@ -51,7 +51,7 @@ public class GameRoundRepository : IGameRoundRepository
 		parameters.Add("@extrastatus", criteria.ExtraStatus);
 		parameters.Add("@refid", criteria.RefId);
 
-		await CallBetRoundSetSPAsync(parameters);
+		await CallBetRoundSetSPAsync(parameters, criteria.GameProviderCode);
 	}
 
 	public async Task ResettleAsync(GameRoundSetCriteria criteria)
@@ -69,26 +69,37 @@ public class GameRoundRepository : IGameRoundRepository
 		parameters.Add("@refid", criteria.RefId);
 		parameters.Add("@isonlywinlostdatechanged", criteria.IsOnlyWinlostDateChanged);
 
-		await CallBetRoundSetSPAsync(parameters);
+		await CallBetRoundSetSPAsync(parameters, criteria.GameProviderCode);
 	}
 
-	public async Task UnsettleAsync(GameRoundSetCriteria criteria)
+	
+	public async Task PlaceBetAndSettleAsync(GameRoundSetCriteria criteria)
 	{
 		var parameters = new DynamicParameters();
 
-		parameters.Add("@extrastatus", criteria.ExtraStatus);
+		parameters.Add("@actiontype", "Settle");
 		parameters.Add("@external_round_id", criteria.ExternalRoundId);
-		parameters.Add("@licenseetxid", criteria.LicenseeTxId);
-		parameters.Add("@brand_id", criteria.BrandId);
+		parameters.Add("@game_provider_id", criteria.GameProviderId);
+		parameters.Add("@player_code", criteria.PlayerCode);
 		parameters.Add("@game_id", criteria.GameId);
+		parameters.Add("@currency_code", criteria.CurrencyCode);
+		parameters.Add("@game_provider_configuration_id", criteria.GameProviderConfigurationId);
+		parameters.Add("@wallet_id", criteria.WalletId);
+		parameters.Add("@brand_id", criteria.BrandId);
+		parameters.Add("@licenseetxid", criteria.LicenseeTxId);
+		parameters.Add("@external_created_on", criteria.ExternalCreatedOn);
+		parameters.Add("@external_closed_on", criteria.ExternalClosedOn);
 		parameters.Add("@status", criteria.Status);
-		parameters.Add("@actiontype", criteria.ActionType);
+		parameters.Add("@payout", criteria.Payout);
+		parameters.Add("@extrastatus", criteria.ExtraStatus);
+		parameters.Add("@refid", criteria.RefId);
 
-		await CallBetRoundSetSPAsync(parameters);
+		await CallBetRoundSetSPAsync(parameters, criteria.GameProviderCode);
 	}
 
-	private async Task CallBetRoundSetSPAsync(DynamicParameters parameters)
+	private async Task CallBetRoundSetSPAsync(DynamicParameters parameters, string provider)
 	{
+		var spName = string.Format(spTemplate, provider);
 		try
 		{
 			using (IDbConnection db = new NpgsqlConnection(_connectionString))

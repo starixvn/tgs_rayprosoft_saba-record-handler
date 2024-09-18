@@ -6,7 +6,7 @@ public interface IProviderRepository
 {
 	Task<Guid?> GetProviderIdByCodeAsync(string code);
 
-	Task<GameInfo?> GetGamesByProviderIdAsync(Guid gameProviderId);
-
 	Task<Guid?> GetGameProviderConfigurationIdAsync(Guid gameProviderId, Guid brandId);
+
+	Task<GameInfo?> GetGameInfoByExternalIdAsync(Guid gameProviderId, string externalId);
 }

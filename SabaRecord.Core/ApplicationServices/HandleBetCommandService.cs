@@ -23,7 +23,7 @@ public class HandleBetCommandService(
 			var gameProviderId = (Guid)await providerRepository.GetProviderIdByCodeAsync(command.GameProviderCode);
 			var playerInfo = await playerRepository.GetPlayerInfobyPlayerCodeAsync(command.PlayerCode);
 			var gameProviderConfigurationId = (Guid)await providerRepository.GetGameProviderConfigurationIdAsync(gameProviderId, playerInfo.BrandId);
-			var gameInfo = await providerRepository.GetGamesByProviderIdAsync(gameProviderId);
+			var gameInfo = await providerRepository.GetGameInfoByExternalIdAsync(gameProviderId, command.ExternalGameId);
 			var exchangeRates = GetExchangeRates(playerInfo.PlayerCode, gameInfo.GameProviderCode);
 
 			await ProcessHandleAsync(command.Action, new GameRoundSetCriteria()
@@ -50,6 +50,7 @@ public class HandleBetCommandService(
 				CreatedOn = DateTimeOffset.UtcNow.DateTime,
 				UpdatedOn = DateTimeOffset.UtcNow.DateTime,
 				IsOnlyWinlostDateChanged = command.IsOnlyWinlostDateChanged,
+				GameProviderCode = GetGameProviderCode(command.GameProviderCode),
 			});
 		}
 		catch (Exception ex)
@@ -66,16 +67,16 @@ public class HandleBetCommandService(
 			case HandleAction.ConfirmBet:
 				await roundRepository.ConfirmBetAsync(criteria);
 				return;
-
 			case HandleAction.Settle:
 			case HandleAction.Unsettle:
 				await roundRepository.SettleAsync(criteria);
 				return;
-
 			case HandleAction.Resettle:
 				await roundRepository.ResettleAsync(criteria);
 				return;
-
+			case HandleAction.PlaceBetAndSettle:
+				await roundRepository.PlaceBetAndSettleAsync(criteria);
+				return;
 			default:
 				throw new InvalidOperationException($"Invalid Action: {action}");
 		}
@@ -90,4 +91,7 @@ public class HandleBetCommandService(
 				&& x.CurrencyCode.Equals(currencyCode, StringComparison.OrdinalIgnoreCase))
 			.Select(x => x.ExchangeRate)
 			.SingleOrDefault(1);
+
+	private static string GetGameProviderCode(string gameProviderCode)
+		=> gameProviderCode.Split("-").First().ToLower();
 }

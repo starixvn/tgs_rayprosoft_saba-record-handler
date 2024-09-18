@@ -1,34 +1,36 @@
-﻿using System.Text.Json;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using SabaRecord.Core.Repositories;
 using SabaRecord.Repositories.Models;
 
 namespace SabaRecord.Repositories;
 
-internal class ApiLogsRepository(IMongoClient client) : IApiLogsRepository
+internal class ApiLogsRepository(IMongoClient client, ISentryClient sentryClient) : IApiLogsRepository
 {
-	private static readonly JsonSerializerOptions _WriteOptions = new()
+	public async ValueTask<bool> AddAsync(string action, string reqJson, string resJson, CancellationToken cancellationToken = default)
 	{
-		WriteIndented = true
-	};
-
-	public async ValueTask<bool> AddAsync(string action, Object req, Object res, CancellationToken cancellationToken = default)
-	{
-		var collection = GetCollection(action);
-		var document = new ApiCallLog()
+		try
 		{
-			Time = DateTime.UtcNow,
-			Request = BsonDocument.Parse(JsonSerializer.Serialize(req, _WriteOptions)),
-			Response = BsonDocument.Parse(JsonSerializer.Serialize(res, _WriteOptions))
-		};
+			var collection = GetCollection(action);
+			var document = new ApiCallLog()
+			{
+				Time = DateTime.UtcNow,
+				Request = BsonDocument.Parse(reqJson),
+				Response = BsonDocument.Parse(resJson)
+			};
 
-		await collection.InsertOneAsync(
-			document: document,
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
+			await collection.InsertOneAsync(
+				document: document,
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false);
 
-		return true;
+			return true;
+		}
+		catch (Exception ex)
+		{
+			_ = sentryClient.CaptureException(ex);
+			return true;
+		}
 	}
 
 	private IMongoCollection<ApiCallLog> GetCollection(string action)

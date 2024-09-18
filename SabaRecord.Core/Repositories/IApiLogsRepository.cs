@@ -2,5 +2,5 @@
 
 public interface IApiLogsRepository
 {
-	ValueTask<bool> AddAsync(string action, object req, object res, CancellationToken cancellationToken = default);
+	ValueTask<bool> AddAsync(string action, string reqJson, string resJson, CancellationToken cancellationToken = default);
 }

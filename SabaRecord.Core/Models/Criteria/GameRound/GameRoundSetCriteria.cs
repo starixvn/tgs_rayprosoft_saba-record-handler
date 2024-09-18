@@ -34,4 +34,5 @@ public class GameRoundSetCriteria
 	public string? ExtraStatus { get; internal set; } = null;
 	public long LicenseeTxId { get; set; }
 	public bool IsOnlyWinlostDateChanged { get; set; } = false;
+	public string GameProviderCode { get; set; }
 }

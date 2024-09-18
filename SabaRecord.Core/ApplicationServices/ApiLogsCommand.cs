@@ -1,5 +1,3 @@
-﻿using MongoDB.Bson;
+﻿namespace SabaRecord.Core.ApplicationServices;
 
-namespace SabaRecord.Core.ApplicationServices;
-
-public record ApiLogsCommand(string Key, string Action, object Req, object Res);
+public record ApiLogsCommand(string Key, string Action, string Req, string Res);
