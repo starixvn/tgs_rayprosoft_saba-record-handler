@@ -18,8 +18,8 @@ public class ApiLogsMessageHandler(
 		var logData = JsonConvert.DeserializeObject<ApiLogMessage>(json)
 			?? throw new NullReferenceException("The request data resolves to a null value");
 
-		var key = (string)logData.Request["key"];
-		var action = (string)logData.Request.message.Action;
+		var key = string.IsNullOrWhiteSpace(logData.Key) ? logData.Key : (string)logData.Request["key"];
+		var action = string.IsNullOrWhiteSpace(logData.Action) ? logData.Action : (string)logData.Request.message.Action;
 		var request = logData.Request;
 		var response = logData.Response;
 
