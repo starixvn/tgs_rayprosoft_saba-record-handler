@@ -13,6 +13,7 @@ using Tgs.GameRecord.Saba.Common;
 using Tgs.MessageQueue.Nats.Serializers;
 
 var builder = WebApplication.CreateBuilder(args);
+var env = builder.Configuration.GetValue<string>("env");
 
 // Add services to the container.
 builder.Services
@@ -43,6 +44,7 @@ builder.Services
 	.AddMemoryCache()
 	.AddApiLogsRepositories(mongoClientResolver: (sp) => sp.GetRequiredService<MongoDBConnectionManager>().MongoClient);
 
+
 builder.Services
 .AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
 {
@@ -52,11 +54,11 @@ builder.Services
 .AddMessageQueue()
 .AddNatsMessageQueue(config => config
 	.ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("Nats"))
-		.AddHandler<ApiLogsMessageHandler>(SabaNatsConst.ApiLogsPublish, string.Concat(SabaNatsConst.ApiLogsPublish, ".", Environment.MachineName))
-		.AddHandler<HandleBetMessageHandler>(SabaNatsConst.HandleBetPublish, string.Concat(SabaNatsConst.HandleBetPublish, ".", Environment.MachineName)))
+		.AddHandler<ApiLogsMessageHandler>($"{SabaNatsConst.ApiLogsPublish}.{env}", string.Concat($"{SabaNatsConst.ApiLogsPublish}.{env}", ".", Environment.MachineName))
+		.AddHandler<HandleBetMessageHandler>($"{SabaNatsConst.HandleBetPublish}.{env}", string.Concat($"{SabaNatsConst.HandleBetPublish}.{env}", ".", Environment.MachineName)))
  .ClearAllExchanges()
- .AddNatsGlobPatternExchange(SabaNatsConst.ApiLogsPublish)
- .AddNatsGlobPatternExchange(SabaNatsConst.HandleBetPublish);
+ .AddNatsGlobPatternExchange($"{SabaNatsConst.ApiLogsPublish}.{env}")
+ .AddNatsGlobPatternExchange($"{SabaNatsConst.HandleBetPublish}.{env}");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddGameInterfaceCore();
