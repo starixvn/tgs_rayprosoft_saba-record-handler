@@ -21,8 +21,8 @@ public class ApiLogsMessageHandler(
 			var logData = JsonConvert.DeserializeObject<ApiLogMessage>(json)
 				?? throw new NullReferenceException("The request data resolves to a null value");
 
-			var key = !string.IsNullOrWhiteSpace(logData.Key) ? logData.Key : (string)logData.Request["key"];
-			var action = !string.IsNullOrWhiteSpace(logData.Action) ? logData.Action : (string)logData.Request.Message.Action;
+			var key = TryParseKey(logData);
+			var action = TryParseAction(logData);
 			var request = logData.Request;
 			var response = logData.Response;
 
@@ -50,6 +50,34 @@ public class ApiLogsMessageHandler(
 		catch (Exception ex)
 		{
 			_ = sentryClient.CaptureException(ex);
+		}
+	}
+
+	private string TryParseKey(ApiLogMessage logData)
+	{
+		try
+		{
+			return !string.IsNullOrWhiteSpace(logData.Key) ? logData.Key : (string)logData.Request["key"];
+		}
+		catch (Exception ex)
+		{
+			_ = sentryClient.CaptureMessage($"{ex.Message} - Cannot get key from {JsonConvert.SerializeObject(logData.Request)}", SentryLevel.Info);
+
+			return string.Empty;
+		}
+	}
+
+	private string TryParseAction(ApiLogMessage logData)
+	{
+		try
+		{
+			return !string.IsNullOrWhiteSpace(logData.Action) ? logData.Key : (string)logData.Request.message["action"];
+		}
+		catch (Exception ex)
+		{
+			_ = sentryClient.CaptureMessage($"{ex.Message} - Cannot get action from {JsonConvert.SerializeObject(logData.Request)}", SentryLevel.Info);
+
+			return "NoAction";
 		}
 	}
 }
