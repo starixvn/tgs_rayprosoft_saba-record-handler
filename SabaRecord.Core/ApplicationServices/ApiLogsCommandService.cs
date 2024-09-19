@@ -7,6 +7,6 @@ public class ApiLogsCommandService(IApiLogsRepository logRepository) : ICommandS
 {
 	public async ValueTask ExecuteAsync(ApiLogsCommand command, CancellationToken cancellationToken = default)
 	{
-		_ = await logRepository.AddAsync(command.Action, command.Req, command.Res, cancellationToken);
+		_ = await logRepository.AddAsync(command.GameProviderCode, command.Action, command.Req, command.Res, cancellationToken);
 	}
 }

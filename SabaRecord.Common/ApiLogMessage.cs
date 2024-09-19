@@ -3,6 +3,9 @@
 namespace SabaRecord.Common;
 public record ApiLogMessage
 {
+	[Required]
+	public string GameProviderCode { get; set; }
+
 	[Key]
 	public string Key { get; init; } = default!;
 

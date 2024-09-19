@@ -25,6 +25,7 @@ public class ApiLogsMessageHandler(
 			var action = TryParseAction(logData);
 			var request = logData.Request;
 			var response = logData.Response;
+			var gameProviderCode = logData.GameProviderCode;
 
 			logger.LogInformation("{logInformation}",
 				JsonConvert.SerializeObject(new
@@ -33,6 +34,7 @@ public class ApiLogsMessageHandler(
 					Subject = subject,
 					Data = new
 					{
+						gameProviderCode,
 						key,
 						action,
 						request,
@@ -43,7 +45,7 @@ public class ApiLogsMessageHandler(
 
 			using var scope = serviceProvider.CreateScope();
 			var service = scope.ServiceProvider.GetRequiredService<ICommandService<ApiLogsCommand>>();
-			var command = new ApiLogsCommand(key, action, JsonConvert.SerializeObject(request), JsonConvert.SerializeObject(response));
+			var command = new ApiLogsCommand(gameProviderCode, key, action, JsonConvert.SerializeObject(request), JsonConvert.SerializeObject(response));
 
 			await service.ExecuteAsync(command, cancellationToken: cancellationToken).ConfigureAwait(false);
 		}

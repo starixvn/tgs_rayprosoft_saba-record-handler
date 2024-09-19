@@ -7,11 +7,11 @@ namespace SabaRecord.Repositories;
 
 internal class ApiLogsRepository(IMongoClient client, ISentryClient sentryClient) : IApiLogsRepository
 {
-	public async ValueTask<bool> AddAsync(string action, string reqJson, string resJson, CancellationToken cancellationToken = default)
+	public async ValueTask<bool> AddAsync(string gameProviderCode, string action, string reqJson, string resJson, CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			var collection = GetCollection(action);
+			var collection = GetCollection(gameProviderCode, action);
 			var document = new ApiCallLog()
 			{
 				Time = DateTime.UtcNow,
@@ -33,8 +33,8 @@ internal class ApiLogsRepository(IMongoClient client, ISentryClient sentryClient
 		}
 	}
 
-	private IMongoCollection<ApiCallLog> GetCollection(string action)
+	private IMongoCollection<ApiCallLog> GetCollection(string gameProviderCode, string action)
 	=> client
-	.GetDatabase($"sw_logs_master")
+	.GetDatabase($"{gameProviderCode.ToLower()}_logs_master")
 	.GetCollection<ApiCallLog>($"{action.ToLower()}_logs");
 }
