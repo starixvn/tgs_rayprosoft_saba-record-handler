@@ -108,7 +108,8 @@ public class GameRoundRepository : IGameRoundRepository
 				var result = await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
 				if (result.StatusCode != "0")
 				{
-					SentrySdk.CaptureException(new Exception($"Call SP Bet.Rounds Error: {result.StatusCode} - {result.ErrMsg}"));
+					SentrySdk.CaptureException(
+						new Exception($"Call {spName} Error: {result.StatusCode} - {result.ErrMsg} - {string.Join(',', parameters.ParameterNames.Select(name => name + ":" + parameters.Get<dynamic>(name)))}"));
 				}
 			}
 		}
