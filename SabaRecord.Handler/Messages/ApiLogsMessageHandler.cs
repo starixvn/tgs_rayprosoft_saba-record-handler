@@ -71,7 +71,7 @@ public class ApiLogsMessageHandler(
 	{
 		try
 		{
-			return !string.IsNullOrWhiteSpace(logData.Action) ? logData.Key : (string)logData.Request.message["action"];
+			return !string.IsNullOrWhiteSpace(logData.Action) ? logData.Action : (string)logData.Request.message["action"];
 		}
 		catch (Exception ex)
 		{
