@@ -72,7 +72,6 @@ public class GameRoundRepository : IGameRoundRepository
 		await CallBetRoundSetSPAsync(parameters, criteria.GameProviderCode);
 	}
 
-	
 	public async Task PlaceBetAndSettleAsync(GameRoundSetCriteria criteria)
 	{
 		var parameters = new DynamicParameters();
@@ -106,7 +105,11 @@ public class GameRoundRepository : IGameRoundRepository
 			{
 				string sqlQuery = $"CALL {spName}({string.Join(", ", parameters.ParameterNames.Select(p => $"{p} => @{p}"))});";
 
-				await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
+				var result = await db.QueryFirstAsync<DbExcutionResult>(sqlQuery, parameters);
+				if (result.StatusCode != "0")
+				{
+					SentrySdk.CaptureException(new Exception($"Call SP Bet.Rounds Error: {result.StatusCode} - {result.ErrMsg}"));
+				}
 			}
 		}
 		catch (Exception ex)
