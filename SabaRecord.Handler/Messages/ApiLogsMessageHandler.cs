@@ -22,7 +22,7 @@ public class ApiLogsMessageHandler(
 				?? throw new NullReferenceException("The request data resolves to a null value");
 
 			var key = !string.IsNullOrWhiteSpace(logData.Key) ? logData.Key : (string)logData.Request["key"];
-			var action = !string.IsNullOrWhiteSpace(logData.Action) ? logData.Action : (string)logData.Request.message.Action;
+			var action = !string.IsNullOrWhiteSpace(logData.Action) ? logData.Action : (string)logData.Request.Message.Action;
 			var request = logData.Request;
 			var response = logData.Response;
 
