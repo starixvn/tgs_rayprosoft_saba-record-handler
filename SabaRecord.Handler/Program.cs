@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.HttpLogging;
 using NATS.Client.Core;
+using NATS.Client.JetStream.Models;
 using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -17,14 +18,6 @@ var env = builder.Configuration.GetValue<string>("env");
 
 // Add services to the container.
 builder.Services
-	.AddOptions<MongoDBOptions>()
-	.Configure((MongoDBOptions options, IServiceProvider sp) =>
-	{
-		var configuration = sp.GetRequiredService<IConfiguration>();
-		options.ConnectionString = configuration.GetConnectionString("Mongo")!;
-	})
-	.Services
-	.AddSingleton<MongoDBConnectionManager>()
 	.AddOptions<PolicySettingsOptions>()
 	.Configure((PolicySettingsOptions options, IServiceProvider sp) =>
 	{
@@ -41,8 +34,7 @@ builder.Services
 	.Services
 	.AddSabaRecordHandlerApiCore()
 	.AddRepositories()
-	.AddMemoryCache()
-	.AddApiLogsRepositories(mongoClientResolver: (sp) => sp.GetRequiredService<MongoDBConnectionManager>().MongoClient);
+	.AddMemoryCache();
 
 
 builder.Services
@@ -54,11 +46,26 @@ builder.Services
 .AddMessageQueue()
 .AddNatsMessageQueue(config => config
 	.ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("Nats"))
-		.AddHandler<ApiLogsMessageHandler>($"{SabaNatsConst.ApiLogsPublish}.{env}", string.Concat($"{SabaNatsConst.ApiLogsPublish}.{env}", ".", Environment.MachineName))
-		.AddHandler<HandleBetMessageHandler>($"{SabaNatsConst.HandleBetPublish}.{env}", string.Concat($"{SabaNatsConst.HandleBetPublish}.{env}", ".", Environment.MachineName)))
- .ClearAllExchanges()
- .AddNatsGlobPatternExchange($"{SabaNatsConst.ApiLogsPublish}.{env}")
- .AddNatsGlobPatternExchange($"{SabaNatsConst.HandleBetPublish}.{env}");
+		.ConfigJetStream(new StreamConfig($"handle_bet_{env}", [$"{SabaNatsConst.HandleBetPublish}.{env}"]) with
+		{
+			Storage = StreamConfigStorage.File,
+			Retention = StreamConfigRetention.Interest,
+			NumReplicas = 3,
+		})
+		.AddJetStreamHandler<HandleBetMessageHandler>(
+			$"{SabaNatsConst.HandleBetPublish}.{env}",
+			$"handle_bet_{env}",
+			new ConsumerConfig($"handle_bet_batch_{env}")
+			{
+				MaxAckPending = 3,
+				DeliverGroup = $"handle_bet_batch_{env}",
+				AckPolicy = ConsumerConfigAckPolicy.Explicit,
+				OptStartSeq = 0
+			}
+		)
+	)
+.ClearAllExchanges()
+.AddNatsGlobPatternExchange($"{SabaNatsConst.HandleBetPublish}.{env}");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddGameInterfaceCore();
