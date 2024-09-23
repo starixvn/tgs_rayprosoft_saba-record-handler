@@ -10,40 +10,48 @@ namespace SabaRecord.Handler.Messages;
 
 public class HandleBetMessageHandler(
 	ILogger<HandleBetMessageHandler> logger,
-	ICommandService<HandleBetCommand> handleBetCommand) : IAcknowledgeMessageHandler<ReadOnlyMemory<byte>>
+	ICommandService<HandleBetCommand> handleBetCommand,
+	ISentryClient sentryClient) : IAcknowledgeMessageHandler<ReadOnlyMemory<byte>>
 {
 	public async ValueTask HandleAsync(IAcknowledgeMessage<ReadOnlyMemory<byte>> msg, CancellationToken cancellationToken = default)
 	{
-		var json = Encoding.UTF8.GetString(msg.Data.Span);
-		var message = JsonSerializer.Deserialize<HandleBetMessage>(json)
-			?? throw new NullReferenceException("The request data resolves to a null value");
+		try
+		{
+			var json = Encoding.UTF8.GetString(msg.Data.Span);
+			var message = JsonSerializer.Deserialize<HandleBetMessage>(json)
+				?? throw new NullReferenceException("The request data resolves to a null value");
 
-		logger.LogInformation("{logInformation}",
-			JsonSerializer.Serialize(new
-			{
-				LogOn = DateTime.Now.ToString("u"),
-				Subject = msg.Subject,
-				Data = new
+			logger.LogInformation("{logInformation}",
+				JsonSerializer.Serialize(new
 				{
-					message.Action,
-					message.PlayerCode,
-					message.ExtraStatus,
-					message.BetState,
-					message.WinlostDate,
-					message.TransactionTime,
-					message.Payout,
-					message.TxId,
-					message.RefId
-				},
-				Message = "This message receiving handler."
-			}));
+					LogOn = DateTime.Now.ToString("u"),
+					msg.Subject,
+					Data = new
+					{
+						message.Action,
+						message.PlayerCode,
+						message.ExtraStatus,
+						message.BetState,
+						message.WinlostDate,
+						message.TransactionTime,
+						message.Payout,
+						message.TxId,
+						message.RefId
+					},
+					Message = "This message receiving handler."
+				}));
 
-		await handleBetCommand.ExecuteAsync(
-			command: ConvertToHandleBetCommand(message),
-			cancellationToken: cancellationToken)
-			.ConfigureAwait(false);
+			await handleBetCommand.ExecuteAsync(
+				command: ConvertToHandleBetCommand(message),
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false);
 
-		await msg.AckAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+			await msg.AckAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+			_ = sentryClient.CaptureException(ex);
+		}
 	}
 
 	public HandleBetCommand ConvertToHandleBetCommand(HandleBetMessage message)

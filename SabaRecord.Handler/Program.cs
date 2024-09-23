@@ -36,7 +36,6 @@ builder.Services
 	.AddRepositories()
 	.AddMemoryCache();
 
-
 builder.Services
 .AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
 {
@@ -59,7 +58,7 @@ builder.Services
 			{
 				DeliverGroup = $"handle_bet_batch_{env}",
 				AckPolicy = ConsumerConfigAckPolicy.Explicit,
-				OptStartSeq = 0
+				DeliverPolicy = ConsumerConfigDeliverPolicy.All
 			}
 		)
 	)
