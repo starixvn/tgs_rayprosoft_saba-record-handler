@@ -10,11 +10,11 @@ namespace SabaRecord.Handler.Messages;
 
 public class HandleBetMessageHandler(
 	ILogger<HandleBetMessageHandler> logger,
-	ICommandService<HandleBetCommand> handleBetCommand) : IMessageHandler<ReadOnlyMemory<byte>>
+	ICommandService<HandleBetCommand> handleBetCommand) : IAcknowledgeMessageHandler<ReadOnlyMemory<byte>>
 {
-	public async ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
+	public async ValueTask HandleAsync(IAcknowledgeMessage<ReadOnlyMemory<byte>> msg, CancellationToken cancellationToken = default)
 	{
-		var json = Encoding.UTF8.GetString(data.Span);
+		var json = Encoding.UTF8.GetString(msg.Data.Span);
 		var message = JsonSerializer.Deserialize<HandleBetMessage>(json)
 			?? throw new NullReferenceException("The request data resolves to a null value");
 
@@ -22,7 +22,7 @@ public class HandleBetMessageHandler(
 			JsonSerializer.Serialize(new
 			{
 				LogOn = DateTime.Now.ToString("u"),
-				Subject = subject,
+				Subject = msg.Subject,
 				Data = new
 				{
 					message.Action,
@@ -42,6 +42,8 @@ public class HandleBetMessageHandler(
 			command: ConvertToHandleBetCommand(message),
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
+
+		await msg.AckAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 	}
 
 	public HandleBetCommand ConvertToHandleBetCommand(HandleBetMessage message)
