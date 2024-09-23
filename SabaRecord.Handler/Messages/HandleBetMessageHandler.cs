@@ -10,7 +10,7 @@ namespace SabaRecord.Handler.Messages;
 
 public class HandleBetMessageHandler(
 	ILogger<HandleBetMessageHandler> logger,
-	IServiceProvider serviceProvider) : IMessageHandler<ReadOnlyMemory<byte>>
+	ICommandService<HandleBetCommand> handleBetCommand) : IMessageHandler<ReadOnlyMemory<byte>>
 {
 	public async ValueTask HandleAsync(string subject, ReadOnlyMemory<byte> data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
 	{
@@ -38,9 +38,7 @@ public class HandleBetMessageHandler(
 				Message = "This message receiving handler."
 			}));
 
-		using var scope = serviceProvider.CreateScope();
-		var service = scope.ServiceProvider.GetRequiredService<ICommandService<HandleBetCommand>>();
-		await service.ExecuteAsync(
+		await handleBetCommand.ExecuteAsync(
 			command: ConvertToHandleBetCommand(message),
 			cancellationToken: cancellationToken)
 			.ConfigureAwait(false);
