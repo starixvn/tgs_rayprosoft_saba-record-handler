@@ -57,7 +57,6 @@ builder.Services
 			$"handle_bet_{env}",
 			new ConsumerConfig($"handle_bet_batch_{env}")
 			{
-				MaxAckPending = 3,
 				DeliverGroup = $"handle_bet_batch_{env}",
 				AckPolicy = ConsumerConfigAckPolicy.Explicit,
 				OptStartSeq = 0
