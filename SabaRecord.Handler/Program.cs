@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Extensions.Options;
 using NATS.Client.Core;
 using NATS.Client.JetStream.Models;
 using Npgsql;
@@ -34,7 +35,10 @@ builder.Services
 	.Services
 	.AddSabaRecordHandlerApiCore()
 	.AddRepositories()
-	.AddMemoryCache();
+	.AddMemoryCache(options =>
+	{
+		options.ExpirationScanFrequency = TimeSpan.FromMinutes(1);
+	});
 
 builder.Services
 .AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
