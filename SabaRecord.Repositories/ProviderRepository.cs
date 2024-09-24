@@ -31,7 +31,7 @@ namespace SabaRecord.Repositories
 			{
 				using (IDbConnection db = new NpgsqlConnection(connectionString))
 				{
-				    id = await db.QueryFirstOrDefaultAsync<Guid>("SELECT dbo.game_provider_get_provider_id_by_code(@provider_code);", new { provider_code = code });
+				    id = await db.QueryFirstOrDefaultAsync<Guid?>("SELECT dbo.game_provider_get_provider_id_by_code(@provider_code);", new { provider_code = code });
 				}
 
 				if (id is not null)
@@ -51,7 +51,7 @@ namespace SabaRecord.Repositories
 				{
 					var parameters = new { game_provider_id = gameProviderId, brand_id = brandId };
 
-					id = await db.QueryFirstOrDefaultAsync<Guid>(" SELECT dbo.brand_game_provider_get_configuration_id(@game_provider_id, @brand_id);", parameters);
+					id = await db.QueryFirstOrDefaultAsync<Guid?>(" SELECT dbo.brand_game_provider_get_configuration_id(@game_provider_id, @brand_id);", parameters);
 
 					if (id is not null)
 					{
@@ -73,7 +73,7 @@ namespace SabaRecord.Repositories
 				var parameters = new { external_id = externalId, game_provider_id = gameProviderId };
 
 
-			    gameId = await db.QueryFirstOrDefaultAsync<int>("SELECT dbo.game_get_game_id_by_external_id_and_provider_id(@external_id, @game_provider_id)", parameters);
+			    gameId = await db.QueryFirstOrDefaultAsync<int?>("SELECT dbo.game_get_game_id_by_external_id_and_provider_id(@external_id, @game_provider_id)", parameters);
 
 				if (gameId is not null)
 				{
