@@ -13,6 +13,7 @@ namespace SabaRecord.Repositories
 	public class PlayerRepositoryImp : IPlayerRepository
 	{
 		private readonly string connectionString;
+		private readonly string functionName = "dbo.player_get_player_info_by_player_code";
 		private readonly IMemoryCache memoryCache;
 		private readonly CacheSettingsOptions cacheSettings;
 
@@ -30,31 +31,8 @@ namespace SabaRecord.Repositories
 			{
 				using (IDbConnection db = new NpgsqlConnection(connectionString))
 				{
-					string sql = @"
-							SELECT
-								r.Id AS ResellerId,
-								r.Code AS ResellerCode,
-								l.Id AS LicenseeId,
-								l.Code AS LicenseeCode,
-								b.Id AS BrandId,
-								b.Code AS BrandCode,
-								p.player_code AS PlayerCode,
-								p.username AS Username,
-								p.default_wallet_id AS WalletId,
-								p.default_wallet_currency_code AS CurrencyCode
-							FROM
-								dbo.Players p
-							INNER JOIN
-								dbo.Brands b ON p.brand_id = b.id
-							INNER JOIN
-								dbo.Licensees l ON b.licensee_id = l.id
-							INNER JOIN
-								dbo.Resellers r ON l.reseller_id = r.id
-							WHERE
-								p.player_code = @PlayerCode;";
-
-					var parameters = new { PlayerCode = code };
-					playerInfo = await db.QueryFirstOrDefaultAsync<PlayerInfo>(sql, parameters); // check correct property later
+					var parameters = new { player_code = code };
+				    playerInfo = await db.QueryFirstOrDefaultAsync<PlayerInfo>("SELECT * FROM dbo.player_get_player_info_by_player_code(@player_code);", parameters);
 				}
 
 				if (playerInfo is not null)

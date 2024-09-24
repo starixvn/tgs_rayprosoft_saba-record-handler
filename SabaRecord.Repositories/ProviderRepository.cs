@@ -31,8 +31,7 @@ namespace SabaRecord.Repositories
 			{
 				using (IDbConnection db = new NpgsqlConnection(connectionString))
 				{
-					string sqlQuery = "SELECT ga.Id FROM dbo.game_providers ga WHERE ga.code = @Code";
-					id = await db.QueryFirstOrDefaultAsync<Guid>(sqlQuery, new { Code = code });
+				    id = await db.QueryFirstOrDefaultAsync<Guid>("SELECT dbo.game_provider_get_provider_id_by_code(@provider_code);", new { provider_code = code });
 				}
 
 				if (id is not null)
@@ -50,17 +49,9 @@ namespace SabaRecord.Repositories
 			if (!memoryCache.TryGetValue(key, out Guid? id))
 				using (IDbConnection db = new NpgsqlConnection(connectionString))
 				{
-					string sqlQuery = @"
-						SELECT
-							bgp.game_provider_configuration_id
-						FROM
-							dbo.brand_game_providers AS bgp
-						WHERE
-							bgp.game_provider_id = @GameProviderId
-							AND bgp.brand_id = @BrandId";
+					var parameters = new { game_provider_id = gameProviderId, brand_id = brandId };
 
-					var parameters = new { GameProviderId = gameProviderId, BrandId = brandId };
-					id = await db.QueryFirstOrDefaultAsync<Guid>(sqlQuery, parameters);
+					id = await db.QueryFirstOrDefaultAsync<Guid>(" SELECT dbo.brand_game_provider_get_configuration_id(@game_provider_id, @brand_id);", parameters);
 
 					if (id is not null)
 					{
@@ -77,27 +68,11 @@ namespace SabaRecord.Repositories
 
 			if (!memoryCache.TryGetValue(key, out GameInfo? gameInfo))
 			{
-				//TODO select, limit and order
 				using IDbConnection db = new NpgsqlConnection(connectionString);
-				string sqlQuery = @"
-						SELECT
-							id as GameId,
-							status,
-							external_id AS ExternalGameId,
-							game_provider_id AS GameProviderId,
-							sub_game AS SubGame,
-							available_currencies AS AvailableCurrencies,
-							code as GameCode,
-							name,
-							sub_game_provider_code AS SubGameProviderCode
-						FROM
-							dbo.games
-						WHERE
-							external_id = @ExternalId AND game_provider_id = @GameProviderId";
 
-				var parameters = new { ExternalId = externalId, GameProviderId = gameProviderId };
+				var parameters = new { external_id = externalId, game_provider_id = gameProviderId };
 
-				gameInfo = await db.QueryFirstOrDefaultAsync<GameInfo>(sqlQuery, parameters);
+				gameInfo = await db.QueryFirstOrDefaultAsync<GameInfo>("SELECT * FROM  dbo.game_get_game_info_by_external_id_and_provider_id(@external_id, @game_provider_id)", parameters);
 
 				if (gameInfo is not null)
 				{
