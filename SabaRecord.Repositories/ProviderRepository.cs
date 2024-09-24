@@ -26,6 +26,7 @@ namespace SabaRecord.Repositories
 		public async Task<Guid?> GetProviderIdByCodeAsync(string code)
 		{
 			string key = string.Concat(typeof(ProviderRepository).Namespace!.Replace(".", "-").ToLower(), ":Provider:", code);
+
 			if (!memoryCache.TryGetValue(key, out Guid? id))
 			{
 				using (IDbConnection db = new NpgsqlConnection(connectionString))
@@ -36,7 +37,7 @@ namespace SabaRecord.Repositories
 
 				if (id is not null)
 				{
-					return memoryCache.Set(key, id, TimeSpan.FromMinutes(cacheSettings.ExpiredTimeInMinute));
+					return memoryCache.Set(key, id, TimeSpan.FromHours(cacheSettings.ExpiredTimeInHour));
 				}
 			}
 
@@ -63,7 +64,7 @@ namespace SabaRecord.Repositories
 
 					if (id is not null)
 					{
-						return memoryCache.Set(key, id, TimeSpan.FromMinutes(cacheSettings.ExpiredTimeInMinute));
+						return memoryCache.Set(key, id, TimeSpan.FromHours(cacheSettings.ExpiredTimeInHour));
 					}
 				}
 
@@ -76,6 +77,7 @@ namespace SabaRecord.Repositories
 
 			if (!memoryCache.TryGetValue(key, out GameInfo? gameInfo))
 			{
+				//TODO select, limit and order
 				using IDbConnection db = new NpgsqlConnection(connectionString);
 				string sqlQuery = @"
 						SELECT
