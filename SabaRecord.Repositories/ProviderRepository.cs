@@ -62,25 +62,26 @@ namespace SabaRecord.Repositories
 			return id;
 		}
 
-		public async Task<GameInfo?> GetGameInfoByExternalIdAsync(Guid gameProviderId, string externalId)
+		public async Task<int?> GetGameIdByExternalIdAsync(Guid gameProviderId, string externalId)
 		{
 			var key = BuildCacheKey($"GetGameInfoByExternalId::{gameProviderId}:{externalId}");
 
-			if (!memoryCache.TryGetValue(key, out GameInfo? gameInfo))
+			if (!memoryCache.TryGetValue(key, out int? gameId))
 			{
 				using IDbConnection db = new NpgsqlConnection(connectionString);
 
 				var parameters = new { external_id = externalId, game_provider_id = gameProviderId };
 
-				gameInfo = await db.QueryFirstOrDefaultAsync<GameInfo>("SELECT * FROM  dbo.game_get_game_info_by_external_id_and_provider_id(@external_id, @game_provider_id)", parameters);
 
-				if (gameInfo is not null)
+			    gameId = await db.QueryFirstOrDefaultAsync<int>("SELECT dbo.game_get_game_id_by_external_id_and_provider_id(@external_id, @game_provider_id)", parameters);
+
+				if (gameId is not null)
 				{
-					return memoryCache.Set(key, gameInfo, TimeSpan.FromMinutes(cacheSettings.ExpiredTimeInMinute));
+					return memoryCache.Set(key, gameId, TimeSpan.FromMinutes(cacheSettings.ExpiredTimeInMinute));
 				}
 			}
 
-			return gameInfo is null ? await GetGameInfoByExternalIdAsync(gameProviderId, "0") : gameInfo;
+			return gameId is null ? await GetGameIdByExternalIdAsync(gameProviderId, "0") : gameId;
 		}
 
 		private static string BuildCacheKey(string action)

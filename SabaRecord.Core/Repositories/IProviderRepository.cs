@@ -8,5 +8,5 @@ public interface IProviderRepository
 
 	Task<Guid?> GetGameProviderConfigurationIdAsync(Guid gameProviderId, Guid brandId);
 
-	Task<GameInfo?> GetGameInfoByExternalIdAsync(Guid gameProviderId, string externalId);
+	Task<int?> GetGameIdByExternalIdAsync(Guid gameProviderId, string externalId);
 }
