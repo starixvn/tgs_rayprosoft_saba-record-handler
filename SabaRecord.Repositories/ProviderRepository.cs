@@ -64,7 +64,7 @@ namespace SabaRecord.Repositories
 
 		public async Task<int?> GetGameIdByExternalIdAsync(Guid gameProviderId, string externalId)
 		{
-			var key = BuildCacheKey($"GetGameInfoByExternalId::{gameProviderId}:{externalId}");
+			var key = BuildCacheKey($"GetGameIdByExternalId::{gameProviderId}:{externalId}");
 
 			if (!memoryCache.TryGetValue(key, out int? gameId))
 			{
