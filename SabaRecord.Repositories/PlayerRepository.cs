@@ -13,7 +13,6 @@ namespace SabaRecord.Repositories
 	public class PlayerRepositoryImp : IPlayerRepository
 	{
 		private readonly string connectionString;
-		private readonly string functionName = "dbo.player_get_player_info_by_player_code";
 		private readonly IMemoryCache memoryCache;
 		private readonly CacheSettingsOptions cacheSettings;
 
