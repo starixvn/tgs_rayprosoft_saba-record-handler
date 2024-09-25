@@ -81,7 +81,7 @@ namespace SabaRecord.Repositories
 				}
 			}
 
-			return gameId is null ? await GetGameIdByExternalIdAsync(gameProviderId, "0") : gameId;
+			return gameId;
 		}
 
 		private static string BuildCacheKey(string action)
