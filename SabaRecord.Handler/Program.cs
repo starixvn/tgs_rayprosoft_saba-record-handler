@@ -54,6 +54,7 @@ builder.Services
 			Storage = StreamConfigStorage.File,
 			Retention = StreamConfigRetention.Interest,
 			NumReplicas = 3,
+			MaxAge = env != "DEV" ? TimeSpan.Zero : TimeSpan.FromMinutes(15),
 		})
 		.AddJetStreamHandler<HandleBetMessageHandler>(
 			$"{SabaNatsConst.HandleBetPublish}.{env}",
