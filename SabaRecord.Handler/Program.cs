@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.Extensions.Options;
 using NATS.Client.Core;
 using NATS.Client.JetStream.Models;
 using Npgsql;
@@ -35,10 +34,7 @@ builder.Services
 	.Services
 	.AddSabaRecordHandlerApiCore()
 	.AddRepositories()
-	.AddMemoryCache(options =>
-	{
-		options.ExpirationScanFrequency = TimeSpan.FromMinutes(1);
-	});
+	.AddMemoryCache(options => options.ExpirationScanFrequency = TimeSpan.FromMinutes(1));
 
 builder.Services
 .AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
@@ -63,7 +59,9 @@ builder.Services
 			{
 				DeliverGroup = $"handle_bet_batch_{env}",
 				AckPolicy = ConsumerConfigAckPolicy.Explicit,
-				DeliverPolicy = ConsumerConfigDeliverPolicy.All
+				DeliverPolicy = ConsumerConfigDeliverPolicy.All,
+				MaxDeliver = 3,
+				Backoff = [2, 5, 10] // retry in next 2s, 5s, and 10s
 			}
 		)
 	)
