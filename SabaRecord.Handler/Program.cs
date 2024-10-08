@@ -61,7 +61,6 @@ builder.Services
 				AckPolicy = ConsumerConfigAckPolicy.Explicit,
 				DeliverPolicy = ConsumerConfigDeliverPolicy.All,
 				MaxDeliver = 3,
-				Backoff = [2, 5, 10] // retry in next 2s, 5s, and 10s
 			}
 		)
 	)
