@@ -10,11 +10,9 @@ using SabaRecord.Core.DependencyInjection;
 using SabaRecord.Handler;
 using SabaRecord.Handler.Messages;
 using SabaRecord.Repositories.DependencyInjection;
-using Tgs.GameRecord.Saba.Common;
 using Tgs.MessageQueue.Nats.Serializers;
 
 var builder = WebApplication.CreateBuilder(args);
-var env = builder.Configuration.GetValue<string>("env");
 
 // Add services to the container.
 builder.Services
@@ -36,6 +34,8 @@ builder.Services
 	.AddRepositories()
 	.AddMemoryCache(options => options.ExpirationScanFrequency = TimeSpan.FromMinutes(1));
 
+var natsConfigs = builder.Configuration.GetSection("NatsConfigs").Get<NatsConfigs>();
+
 builder.Services
 .AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
 {
@@ -45,19 +45,19 @@ builder.Services
 .AddMessageQueue()
 .AddNatsMessageQueue(config => config
 	.ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("Nats"))
-		.ConfigJetStream(new StreamConfig($"handle_bet_{env}", [$"{SabaNatsConst.HandleBetPublish}.{env}"]) with
+		.ConfigJetStream(new StreamConfig(natsConfigs.StreamName, [natsConfigs.Subject]) with
 		{
 			Storage = StreamConfigStorage.File,
 			Retention = StreamConfigRetention.Interest,
 			NumReplicas = 3,
-			MaxAge = env != "DEV" ? TimeSpan.Zero : TimeSpan.FromMinutes(15),
+			MaxAge = natsConfigs.MaxAgeInMinute is null ? TimeSpan.Zero : TimeSpan.FromMinutes((double)natsConfigs.MaxAgeInMinute),
 		})
 		.AddJetStreamHandler<HandleBetMessageHandler>(
-			$"{SabaNatsConst.HandleBetPublish}.{env}",
-			$"handle_bet_{env}",
-			new ConsumerConfig($"handle_bet_batch_{env}")
+			natsConfigs.Subject,
+			natsConfigs.StreamName,
+			new ConsumerConfig(natsConfigs.ConsumerName)
 			{
-				DeliverGroup = $"handle_bet_batch_{env}",
+				DeliverGroup = natsConfigs.ConsumerName,
 				AckPolicy = ConsumerConfigAckPolicy.Explicit,
 				DeliverPolicy = ConsumerConfigDeliverPolicy.All,
 				MaxDeliver = 3,
@@ -66,7 +66,7 @@ builder.Services
 		)
 	)
 .ClearAllExchanges()
-.AddNatsGlobPatternExchange($"{SabaNatsConst.HandleBetPublish}.{env}");
+.AddNatsGlobPatternExchange(natsConfigs.Subject);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddGameInterfaceCore();
